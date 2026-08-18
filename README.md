@@ -2,16 +2,26 @@
 
 The magpie team's vLLM optimizations for DGX Spark (GB10) serving.
 
-Each optimization is a **patch over the vLLM checkout** plus plain
-supporting **scripts** — no plugins, no entry points, no env vars, nothing
-to pip-install. Apply the patch once, drive the feature through vLLM's own
-arguments. Unactivated, every patched file behaves stock.
+Each optimization ships in the lightest form that reaches every vLLM
+process, and is **inert until activated** through vLLM's own arguments:
+
+- **patch** — a git-apply-able change over the vLLM checkout, for features
+  that must live inside vLLM (mtp-pruning). Unactivated, patched files
+  behave stock.
+- **plugin** — a pip-installable package hooking `vllm.general_plugins`,
+  for features vLLM's extension points can carry with zero patched lines
+  (sparse-attention). Unactivated, registered classes construct stock.
 
 ## Catalog
 
 | Optimization | What it does | Measured gain | Docs |
 |---|---|---|---|
-| **mtp-pruning** | Prunes the Qwen3.5 MTP draft vocabulary to a frequency keep-set, slicing the 2.5 GB shared draft `lm_head` to a few % of its rows. Lossless output. | draft-head 45 → ~1 ms/step; decode 1.28–1.35× at c=1–8; acceptance −1% | [docs/mtp-pruning.md](docs/mtp-pruning.md) |
+| **mtp-pruning** (patch) | Prunes the Qwen3.5 MTP draft vocabulary to a frequency keep-set, slicing the 2.5 GB shared draft `lm_head` to a few % of its rows. Lossless output. | draft-head 45 → ~1 ms/step; decode 1.28–1.35× at c=1–8; acceptance −1% | [docs/mtp-pruning.md](docs/mtp-pruning.md) |
+| **sparse-attention** (plugin) | Vortex per-KV-head block-sparse decode for Qwen3.5 full-attention layers: per-block mean-K centroids + fused top-k select 4–27% of KV per step; FULL cudagraph decode. Zero vLLM lines patched. | attention GPU 3.1×; decode step flat vs context (1.14× vs stock @160K resident KV, growing with occupancy); RULER 16K 0.983 vs 1.000 (random-control 0.000) | [docs/sparse-attention.md](docs/sparse-attention.md) |
+
+**Known interaction:** the two are not composable yet — MTP spec decode
+makes `decode_query_len > 1`, which routes decode rows past the sparse path
+(correct output, sparsity inert). See docs/sparse-attention.md.
 
 ## Installation
 
@@ -44,9 +54,16 @@ Scripts run with the vLLM environment's Python and need nothing extra:
 ## Layout
 
 ```
-patches/<optimization>/NNNN-*.patch   # the vLLM change, numbered, git-apply-able
+patches/<optimization>/NNNN-*.patch   # patch-form: the vLLM change, git-apply-able
+plugins/<optimization>/               # plugin-form: pip package (pyproject + code + tests)
 scripts/<optimization>/*.py           # plain workflow scripts (stdlib + vLLM-env deps)
 docs/<optimization>.md                # mechanism, workflow, measured results, limits
+```
+
+Plugin install:
+
+```bash
+uv pip install -e plugins/sparse-attention --python /path/to/vllm-venv/bin/python
 ```
 
 Adding an optimization means adding one row to the catalog and one entry in
