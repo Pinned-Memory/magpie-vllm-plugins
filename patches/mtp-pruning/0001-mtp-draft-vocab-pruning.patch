@@ -1,0 +1,172 @@
+diff --git a/vllm/config/speculative.py b/vllm/config/speculative.py
+index 07bdcac68b..6634fe784a 100644
+--- a/vllm/config/speculative.py
++++ b/vllm/config/speculative.py
+@@ -154,6 +154,16 @@ class SpeculativeConfig:
+     draft logits to shared tokens only (TLI algorithm). Requires
+     method='draft_model'."""
+ 
++    draft_vocab_path: str | None = None
++    """Path to a torch-saved, non-empty, strictly-ascending 1-D integer
++    tensor of TARGET vocab ids. When set, the draft model's lm_head is
++    pruned to those rows (a K-row slice of the target head) and draft
++    logits are mapped back to target ids via d2t offsets, cutting the
++    dominant per-draft GEMV cost. Lossless for the output distribution:
++    the target still verifies with its full head; a keep-set miss only
++    costs draft acceptance. Currently consumed by the Qwen3.5 MTP draft
++    models (magpie-spark-vllm mtp-pruning optimization)."""
++
+     # Ngram proposer configuration
+     prompt_lookup_max: int | None = Field(default=None, ge=1)
+     """Maximum size of ngram token window when using Ngram proposer, required
+diff --git a/vllm/model_executor/models/qwen3_5_mtp.py b/vllm/model_executor/models/qwen3_5_mtp.py
+index 6421c8b60d..04057cbbff 100644
+--- a/vllm/model_executor/models/qwen3_5_mtp.py
++++ b/vllm/model_executor/models/qwen3_5_mtp.py
+@@ -237,8 +237,91 @@ class Qwen3_5MTP(LocalArgmaxMixin, nn.Module, SupportsMultiModal):
+             vllm_config=vllm_config, prefix=maybe_prefix(prefix, "mtp")
+         )
+ 
++        # Optional draft-vocab pruning (magpie-spark-vllm mtp-pruning): set
++        # draft_vocab_path in --speculative-config to a torch-saved 1-D int64
++        # tensor of sorted TARGET vocab ids to keep. The draft lm_head is then
++        # a K-row slice of the target head; draft argmax ids are mapped back
++        # to target ids via d2t offsets (TorchSpec convention:
++        # d2t[i] = target_id - i), the same mechanism Eagle3 uses (see
++        # qwen3_eagle3.py / LocalArgmaxMixin). Lossless for the output
++        # distribution: the target still verifies with its full head; a miss
++        # only costs draft acceptance.
++        spec_config = vllm_config.speculative_config
++        keep_path = getattr(spec_config, "draft_vocab_path", None)
++        self.draft_vocab_size: int | None = None
++        self._mtp_keep_ids: torch.Tensor | None = None
++
+         if get_pp_group().is_last_rank:
+-            if config.tie_word_embeddings:
++            if keep_path:
++                if config.tie_word_embeddings:
++                    raise ValueError(
++                        "draft_vocab_path is incompatible with "
++                        "tie_word_embeddings: the input embedding must stay "
++                        "full-vocab."
++                    )
++                keep = torch.load(keep_path, map_location="cpu")
++                if keep.is_floating_point() or keep.dtype == torch.bool:
++                    raise ValueError(
++                        f"draft_vocab_path {keep_path}: keep-ids must "
++                        f"be an integer tensor, got {keep.dtype}"
++                    )
++                keep = keep.to(torch.int64)
++                if keep.ndim != 1 or keep.numel() == 0:
++                    raise ValueError(
++                        f"draft_vocab_path {keep_path}: expected a "
++                        f"non-empty 1-D tensor, got shape {tuple(keep.shape)}"
++                    )
++                if not bool((keep[1:] > keep[:-1]).all()):
++                    raise ValueError(
++                        f"draft_vocab_path {keep_path}: keep-ids must "
++                        "be strictly ascending (sorted, unique)"
++                    )
++                if int(keep[0]) < 0 or int(keep[-1]) >= config.vocab_size:
++                    raise ValueError(
++                        f"draft_vocab_path {keep_path}: ids must be in "
++                        f"[0, {config.vocab_size}), got "
++                        f"[{int(keep[0])}, {int(keep[-1])}]"
++                    )
++                self.draft_vocab_size = int(keep.numel())
++                self._mtp_keep_ids = keep
++                # Route BOTH lm_head-sharing sites (V1
++                # llm_base_proposer._maybe_share_lm_head and the V2
++                # gpu-worker load_eagle_model/_should_share) away from
++                # clobbering the sliced head: with this flag set, each
++                # compares weights, sees the (K, h) vs (vocab, h) shape
++                # mismatch, and keeps the draft's own head. Same mechanism
++                # as gemma4_mtp.
++                self.has_own_lm_head = True
++                self.lm_head = ParallelLMHead(
++                    self.draft_vocab_size,
++                    config.hidden_size,
++                    quant_config=self.quant_config,
++                    prefix=maybe_prefix(prefix, "lm_head"),
++                )
++                # Buffers, not Parameters: they are derived from the keep-set
++                # file, not the checkpoint, and must not trip the loader's
++                # weights-not-initialized check. The model is constructed
++                # under a CUDA default-device context, so arange lands on the
++                # target device; move keep to match before subtracting.
++                # d2t offsets serve LocalArgmaxMixin.get_top_tokens; the raw
++                # keep ids serve the compute_logits scatter without
++                # reconstructing them per call.
++                arange = torch.arange(self.draft_vocab_size, dtype=torch.int64)
++                keep_dev = keep.to(arange.device)
++                self.register_buffer(
++                    "draft_id_to_target_id", keep_dev - arange, persistent=False
++                )
++                self.register_buffer(
++                    "draft_keep_target_ids", keep_dev, persistent=False
++                )
++                logger.info(
++                    "MTP draft vocab pruned: %d of %d ids (%.2f%%), keep-set %s",
++                    self.draft_vocab_size,
++                    config.vocab_size,
++                    100.0 * self.draft_vocab_size / config.vocab_size,
++                    keep_path,
++                )
++            elif config.tie_word_embeddings:
+                 self.lm_head = self.model.embed_tokens
+             else:
+                 self.lm_head = ParallelLMHead(
+@@ -250,7 +333,11 @@ class Qwen3_5MTP(LocalArgmaxMixin, nn.Module, SupportsMultiModal):
+         else:
+             self.lm_head = PPMissingLayer()
+ 
+-        self.logits_processor = LogitsProcessor(config.vocab_size)
++        self.logits_processor = LogitsProcessor(
++            self.draft_vocab_size
++            if self.draft_vocab_size is not None
++            else config.vocab_size
++        )
+ 
+     def embed_input_ids(
+         self,
+@@ -297,7 +384,16 @@ class Qwen3_5MTP(LocalArgmaxMixin, nn.Module, SupportsMultiModal):
+         hidden_states: torch.Tensor,
+         spec_step_idx: int = 0,
+     ) -> torch.Tensor | None:
+-        return self.logits_processor(self.lm_head, hidden_states)
++        logits = self.logits_processor(self.lm_head, hidden_states)
++        if self.draft_vocab_size is None or logits is None:
++            return logits
++        # Pruned draft vocab: scatter reduced logits into a full-vocab tensor
++        # (-inf outside the keep-set), exactly as Eagle3Qwen3ForCausalLM does.
++        logits_new = logits.new_full(
++            (logits.shape[0], self.config.vocab_size), float("-inf")
++        )
++        logits_new[:, self.draft_keep_target_ids] = logits
++        return logits_new
+ 
+     def load_weights(self, weights: Iterable[tuple[str, torch.Tensor]]) -> set[str]:
+         def remap_weight_names(weights):
+@@ -307,6 +403,22 @@ class Qwen3_5MTP(LocalArgmaxMixin, nn.Module, SupportsMultiModal):
+                 elif any(key in name for key in ["embed_tokens", "lm_head"]):
+                     if "embed_tokens" in name:
+                         name = name.replace("language_model.", "")
++                    elif self._mtp_keep_ids is not None and name.endswith(
++                        "lm_head.weight"
++                    ):
++                        # Pruned draft vocab: keep only the selected rows of
++                        # the (full) target lm_head for the draft's own head.
++                        weight = weight[self._mtp_keep_ids]
++                    elif self._mtp_keep_ids is not None and "lm_head." in name:
++                        # A quantized head would carry companion tensors
++                        # (weight_scale, input_scale, ...) that would need the
++                        # same row slice; refusing loudly beats loading them
++                        # misaligned with the kept rows.
++                        raise ValueError(
++                            "MTP draft-vocab pruning does not support a "
++                            f"quantized lm_head (found {name}); exclude "
++                            "lm_head from quantization or extend the slice."
++                        )
+                 else:
+                     continue
+                 yield name, weight
