@@ -90,25 +90,31 @@ dispatch-mode counter).
 
   | | stock+MTP | vortex-dense+MTP | sparse+MTP |
   |---|---|---|---|
-  | step p50 / GPU busy | 21.2 / 22.0 ms | 39.1 / 25.4 ms | 38.3 / 24.6 ms |
-  | accepted tokens/step | 3.69 | 3.83 | 3.41 |
+  | step p50 / GPU busy | 21.2 / 22.0 ms | 23.0 / 22.9 ms | 22.6 / 22.5 ms |
+  | accepted tokens/step | 3.54 | 3.31 | 3.45 |
 
-  Verdict: the sparse machinery itself composes at ~zero cost vs its own
-  dense baseline (correctness: RULER 16K 1.000 under sparse+MTP, output
-  char-identical to stock on probes). Two open costs: (a) the per-step
-  original `plan()` x2 adds ~14 ms host, exposed at small batch — the
-  fast-plan debug is the top perf item; (b) draft acceptance dips ~8%
-  (draft imitates the dense target; the sparse target drifts slightly).
-  mtp-pruning (draft lm_head slicing) is orthogonal to all of this and
-  should stack; not yet jointly measured.
+  (Table is post-group-fix; before it, sparse+MTP measured 38.3 ms wall at
+  65% GPU utilization — see ISSUES.md P1-2 for the 65-way KV-cache group
+  explosion and its fix, the `Qwen3_5MTP` override that puts the draft's
+  full-attn layer on the vortex backend in forced-dense mode.)
+
+  Verdict: sparse+MTP is ~1.07x stock wall at the smallest operating point
+  and already beats its own dense baseline (correctness: RULER 16K 1.000
+  under sparse+MTP). Remaining known cost: the folded dense wrapper's
+  ~1-2 ms tax vs stock's layout (ISSUES.md P2-2); the acceptance ordering
+  is within run noise (P2-1). mtp-pruning (draft lm_head slicing) is
+  orthogonal to all of this and should stack; not yet jointly measured.
 - Qwen3.5-family only (the model override targets
   `Qwen3_5ForConditionalGeneration`); the backend itself is model-agnostic
   GQA.
 - `topk_ratio > 0`, custom `schedule_policy`, and vortex `Save`/`Load`
   cross-step state are not ported.
-- Per-step wrapper `plan()` x2 costs ~10-14 ms host (exposed at small
-  batch); vLLM's `fast_plan_decode` was measured to leave stale replay
-  state (0.125 vs 1.000) and is not used. Debugging it is the top perf item.
+- Per-step wrapper `plan()` x2 costs 0.14 ms host for the pair and does
+  not block on a busy stream — cheap enough to keep the correct-by-
+  construction full `plan()`. (vLLM's `fast_plan_decode` is not used: its
+  cudagraph branch skips the H2D refresh of the wrapper's device
+  indptr/last_page_len buffers that our capture path takes from `plan()`;
+  see ISSUES.md P1-2 post-mortem.)
 - Aux memory (centroids, 128 MB workspace, capture wrappers) is NOT seen by
   vLLM's memory profiler; on tight configs (MTP on 32 GB) this forces manual
   `gpu_memory_utilization` headroom. The `customize_spec`/page-padding

@@ -27,3 +27,10 @@ def register() -> None:
         "Qwen3_5ForConditionalGeneration",
         "magpie_vllm.model:VortexQwen3_5ForConditionalGeneration",
     )
+    # MTP draft overrides: same config gate, same inertness without
+    # {"vortex": ...}. Needed so the draft full-attn layer shares the
+    # vortex KV-cache spec (see VortexQwen3_5MTP docstring).
+    ModelRegistry.register_model(
+        "Qwen3_5MTP", "magpie_vllm.model:VortexQwen3_5MTP")
+    ModelRegistry.register_model(
+        "Qwen3_5MoeMTP", "magpie_vllm.model:VortexQwen3_5MoeMTP")

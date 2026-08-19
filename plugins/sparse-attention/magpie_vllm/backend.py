@@ -315,11 +315,19 @@ class VortexFlashInferMetadataBuilder(AttentionMetadataBuilder):
                           head_dim=self.head_dim, page_size=self.vortex_block,
                           q_data_type=self.q_dtype, kv_data_type=self.kv_dtype,
                           sm_scale=self.sm_scale)
-            # Original plan() per step: correct-by-construction. The
-            # fast_plan_decode path left replayed kernels reading stale plan
-            # state (measured 0.125 vs 1.000) and was removed with the
-            # cleanup; re-derive from vLLM's flashinfer backend if the
-            # ~2x2.5ms host cost ever matters.
+            # Original plan() per step: correct-by-construction, and
+            # cheap -- measured 0.14 ms/step for the PAIR, and it does not
+            # block against a busy stream. (The old "~14 ms plan cost" was
+            # a misattribution: the real cost was the 65-way KV-cache group
+            # explosion under MTP, fixed via VortexQwen3_5MTP; see
+            # ISSUES.md P1-2.) The earlier fast_plan_decode attempt broke
+            # (RULER 0.125) because its cudagraph branch skips the H2D
+            # refresh of the wrapper's DEVICE indptr/last_page_len buffers:
+            # stock vLLM maintains those buffers itself, while this capture
+            # path takes them from plan()'s copy -- the indices kernel and
+            # the replayed kernel both read them. If plan() ever matters
+            # again: pinned-staging H2D refresh of both indptrs + lpl, then
+            # flashinfer.decode.fast_decode_plan.
             wr[0].plan(indptr=d_cpu, indices=self.dense_kv_indices,
                        last_page_len=lpl_cpu, **common)
             wr[1].plan(indptr=s_cpu, indices=self.sparse_kv_indices,
@@ -441,7 +449,8 @@ class VortexFlashInferImpl(AttentionImplBase):
                  alibi_slopes=None, sliding_window=None, kv_cache_dtype="auto",
                  logits_soft_cap=None, attn_type="decoder",
                  kv_sharing_target_layer_name=None, *,
-                 vortex_layer_idx: int = -1, **_ignored):
+                 vortex_layer_idx: int = -1, vortex_force_dense: bool = False,
+                 **_ignored):
         self.num_heads = num_heads
         self.head_size = head_size
         self.scale = scale
@@ -455,7 +464,8 @@ class VortexFlashInferImpl(AttentionImplBase):
         self.layer_idx = vortex_layer_idx
         self.cfg = _resolve_cfg()      # model builds under set_current_vllm_config
         self.flow = _resolve_flow(self.cfg)
-        self.use_sparsity = vortex_layer_idx not in self.cfg.layers_skip
+        self.use_sparsity = (not vortex_force_dense
+                             and vortex_layer_idx not in self.cfg.layers_skip)
 
     # -- folded view (M2-verified) ------------------------------------------
     def _folded(self, kv_cache):
@@ -483,6 +493,8 @@ class VortexFlashInferImpl(AttentionImplBase):
         torch.ops._C_cache_ops.reshape_and_cache_flash(
             key, value, k_cache, v_cache, slot_mapping,
             self.kv_cache_dtype, layer._k_scale, layer._v_scale)
+        if not self.use_sparsity:
+            return          # centroids are only read by this layer's indexer
         md = self._md(layer)
         if md is None or self.flow is None:
             return
