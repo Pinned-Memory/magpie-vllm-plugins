@@ -24,6 +24,8 @@ ap.add_argument("--topk", type=int, default=8)
 ap.add_argument("--nreq", type=int, default=4)
 ap.add_argument("--steps", type=int, default=30)
 ap.add_argument("--kv-gib", type=float, default=0.0)
+ap.add_argument("--mtp", type=int, default=0)
+ap.add_argument("--util", type=float, default=0.0)
 args = ap.parse_args()
 
 additional_config = {}
@@ -50,14 +52,17 @@ from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
 
 _kw = dict(model=MODEL, max_model_len=20480, enforce_eager=not args.compile,
-           gpu_memory_utilization=0.80 if args.compile else 0.90,
+           gpu_memory_utilization=args.util or (0.80 if args.compile else 0.90),
            max_num_batched_tokens=2048, max_num_seqs=16,
-           compilation_config={"cudagraph_capture_sizes": [1, 2, 4, 8, 10, 16]}
+           compilation_config={"cudagraph_capture_sizes": [(1 + args.mtp) * b for b in ((1, 2) if args.mtp else (1, 2, 4, 8, 10, 16))]}
            if args.compile else None,
            additional_config=additional_config,
            trust_remote_code=True)
 if args.kv_gib:
     _kw["kv_cache_memory_bytes"] = int(args.kv_gib * (1 << 30))
+if args.mtp:
+    _kw["speculative_config"] = {"method": "mtp",
+                                 "num_speculative_tokens": args.mtp}
 llm = LLM(**_kw)
 tok = AutoTokenizer.from_pretrained(MODEL)
 rows = [json.loads(l) for l in open("ruler16k.jsonl")][: args.nreq]
@@ -71,25 +76,51 @@ for i, p in enumerate(prompts):
     eng.add_request(str(i), p, sp)
 
 # ---- burn through prefill + a few decode steps -----------------------------
-warm = 0
-while warm < 8:
+# BOUNDED warm gate: if the pool can't admit all nreq requests, profile the
+# resident batch instead of spinning forever (the 3h hang: scheduler admits
+# fewer than nreq, len(outs)==nreq is unreachable, loop never exits).
+warm, resident, stable = 0, 0, 0
+for _i in range(3000):
     outs = eng.step()
-    if len(outs) == args.nreq and all(len(o.outputs[0].token_ids) >= 1 for o in outs):
-        warm += 1
+    n = len(outs) if outs else 0
+    if n and all(len(o.outputs[0].token_ids) >= 1 for o in outs):
+        if n == resident:
+            stable += 1
+        else:
+            resident, stable = n, 0
+        if n == args.nreq or stable >= 40:   # full batch, or settled residency
+            warm += 1
+            if warm >= 8:
+                break
+else:
+    raise RuntimeError("warm gate never settled after 3000 steps")
+if resident and resident < args.nreq:
+    print(f"NOTE: pool admits only {resident}/{args.nreq} requests; "
+          f"profiling the resident batch")
 
 # ---- profiled decode steps -------------------------------------------------
 torch.cuda.synchronize()
 _times = []
+_tok0 = None
+_tokN = 0
 for _ in range(args.steps):
     _t = time.perf_counter()
-    eng.step()
+    outs = eng.step()
     torch.cuda.synchronize()
     _times.append(time.perf_counter() - _t)
+    _n = sum(len(o.outputs[0].token_ids) for o in outs) if outs else 0
+    if _tok0 is None:
+        _tok0 = _n
+    _tokN = _n
 unprofiled = sum(_times) / len(_times)
 _s = sorted(_times)
 print("dispatch modes:", dict(_DISPATCH_COUNTS))
 print("NONE inputs (nreq, ntok, uniform, maxq):", dict(_MISSES))
 _DISPATCH_COUNTS.clear()
+if _tok0 is not None and _tokN > _tok0:
+    acc = (_tokN - _tok0) / (len(_times) - 1)
+    print(f"accepted tokens/step: {acc:.2f}  ->  "
+          f"{acc / (sum(_times)/len(_times)):.1f} tok/s decode-phase")
 print(f"step ms: min {_s[0]*1e3:.1f} p50 {_s[len(_s)//2]*1e3:.1f} "
       f"p90 {_s[int(len(_s)*.9)]*1e3:.1f} max {_s[-1]*1e3:.1f}")
 

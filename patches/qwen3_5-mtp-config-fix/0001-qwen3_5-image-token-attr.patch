@@ -1,0 +1,19 @@
+diff --git a/vllm/v1/spec_decode/llm_base_proposer.py b/vllm/v1/spec_decode/llm_base_proposer.py
+index 29a95caa88..17f2e29a9d 100644
+--- a/vllm/v1/spec_decode/llm_base_proposer.py
++++ b/vllm/v1/spec_decode/llm_base_proposer.py
+@@ -1400,8 +1400,12 @@ class SpecDecodeBaseProposer:
+                     target_model.config.media_placeholder_token_id
+                 )
+             else:
+-                self.model.config.image_token_index = (
+-                    target_model.config.image_token_index
++                # Upstream bug: Qwen3.5-family configs name this
++                # `image_token_id`; reading `image_token_index` raises and
++                # breaks MTP spec decode on any Qwen3.5 VL checkpoint.
++                self.model.config.image_token_index = getattr(
++                    target_model.config, "image_token_index",
++                    getattr(target_model.config, "image_token_id", None),
+                 )
+             target_language_model = cast(
+                 SupportsMultiModal, target_model

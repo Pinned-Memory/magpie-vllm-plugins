@@ -24,6 +24,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", choices=["stock", "skip", "sparse"], required=True)
     ap.add_argument("--compile", action="store_true")
+    ap.add_argument("--mtp", type=int, default=0, help="MTP speculative tokens")
+    ap.add_argument("--ignore-eos", action="store_true")
+    ap.add_argument("--kv-gib", type=float, default=0.0,
+                    help="explicit KV pool (kv_cache_memory_bytes)")
     ap.add_argument("--topk", type=int, default=64)
     ap.add_argument("--bos", type=int, default=1)
     ap.add_argument("--eos", type=int, default=2)
@@ -50,12 +54,18 @@ def main():
 
     llm = LLM(model=MODEL, max_model_len=args.max_model_len,
               enforce_eager=not args.compile,
-              gpu_memory_utilization=0.80 if args.compile else 0.90,
+              gpu_memory_utilization=0.80 if args.compile else (0.78 if args.mtp else 0.90),
               max_num_batched_tokens=2048,
               max_num_seqs=16,
-              compilation_config={"cudagraph_capture_sizes": [1, 2, 4, 8]}
+              compilation_config={"cudagraph_capture_sizes":
+                  [(1 + args.mtp) * b for b in (1, 2, 4, 8)]}
               if args.compile else None,
+              kv_cache_memory_bytes=int(args.kv_gib * (1 << 30))
+              if args.kv_gib else None,
               additional_config=additional_config,
+              speculative_config={"method": "mtp",
+                                  "num_speculative_tokens": args.mtp}
+              if args.mtp else None,
               trust_remote_code=True)
     tok = AutoTokenizer.from_pretrained(MODEL)
 
@@ -75,7 +85,8 @@ def main():
             tokenize=False, add_generation_prompt=True, enable_thinking=False)]
         golds = None
 
-    sp = SamplingParams(temperature=0.0, max_tokens=args.max_tokens)
+    sp = SamplingParams(temperature=0.0, max_tokens=args.max_tokens,
+                        ignore_eos=args.ignore_eos)
     t0 = time.time()
     outs = llm.generate(prompts, sp)
     dt = time.time() - t0

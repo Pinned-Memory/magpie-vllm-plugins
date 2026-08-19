@@ -80,17 +80,38 @@ dispatch-mode counter).
 
 ## Limits & interactions
 
-- **Not composable with mtp-pruning yet.** Spec decode makes
-  `decode_query_len = k+1`; the sparse decode path requires uniform
-  single-token decode, so under MTP those rows fall to the dense path —
-  correct output, sparsity inert. Spec-decode support
-  (`supports_spec_as_decode`, per-draft-token planning) is the open item.
+- **MTP spec decode: SUPPORTED (per-token-row planning).** Each of the k+1
+  uniform draft tokens becomes its own planner/wrapper row with its own
+  causal extent; intra-draft causality rides the EOS reservation; rejection
+  rewrites re-fire block summarization. Prerequisite: apply
+  `patches/qwen3_5-mtp-config-fix/` (stock vLLM reads a config attr Qwen3.5
+  doesn't have; breaks MTP with or without this plugin). Measured at 16K,
+  residency-matched, FULL capture, k=3:
+
+  | | stock+MTP | vortex-dense+MTP | sparse+MTP |
+  |---|---|---|---|
+  | step p50 / GPU busy | 21.2 / 22.0 ms | 39.1 / 25.4 ms | 38.3 / 24.6 ms |
+  | accepted tokens/step | 3.69 | 3.83 | 3.41 |
+
+  Verdict: the sparse machinery itself composes at ~zero cost vs its own
+  dense baseline (correctness: RULER 16K 1.000 under sparse+MTP, output
+  char-identical to stock on probes). Two open costs: (a) the per-step
+  original `plan()` x2 adds ~14 ms host, exposed at small batch — the
+  fast-plan debug is the top perf item; (b) draft acceptance dips ~8%
+  (draft imitates the dense target; the sparse target drifts slightly).
+  mtp-pruning (draft lm_head slicing) is orthogonal to all of this and
+  should stack; not yet jointly measured.
 - Qwen3.5-family only (the model override targets
   `Qwen3_5ForConditionalGeneration`); the backend itself is model-agnostic
   GQA.
 - `topk_ratio > 0`, custom `schedule_policy`, and vortex `Save`/`Load`
   cross-step state are not ported.
-- Per-step wrapper `plan()` costs ~5 ms host; vLLM's `fast_plan_decode`
-  was measured to leave stale replay state (0.125 vs 1.000) and is not used.
+- Per-step wrapper `plan()` x2 costs ~10-14 ms host (exposed at small
+  batch); vLLM's `fast_plan_decode` was measured to leave stale replay
+  state (0.125 vs 1.000) and is not used. Debugging it is the top perf item.
+- Aux memory (centroids, 128 MB workspace, capture wrappers) is NOT seen by
+  vLLM's memory profiler; on tight configs (MTP on 32 GB) this forces manual
+  `gpu_memory_utilization` headroom. The `customize_spec`/page-padding
+  accounting (Option A) is the proper fix and now the top robustness item.
 - fp8 KV supported (scale-invariant ranking); nvfp4 KV refused (different
   packing breaks the fold view).

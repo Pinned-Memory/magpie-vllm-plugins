@@ -169,7 +169,11 @@ class VortexFlashInferMetadataBuilder(AttentionMetadataBuilder):
         # bound free for shorter rows.
         self.static_max_blk = -(-mc.max_model_len // self.vortex_block)
         max_bs = vllm_config.scheduler_config.max_num_seqs
-        eff_max = max_bs * self.num_kv_heads
+        spec = vllm_config.speculative_config
+        self.dql_max = 1 + (spec.num_speculative_tokens if spec else 0)
+        # Per-token rows under spec decode: each of the k+1 uniform draft
+        # tokens is its own planner/wrapper row with its own causal extent.
+        eff_max = max_bs * self.dql_max * self.num_kv_heads
         max_blocks_per_req = -(-mc.max_model_len // self.vortex_block)
         max_blocks = eff_max * max_blocks_per_req
 
@@ -180,7 +184,7 @@ class VortexFlashInferMetadataBuilder(AttentionMetadataBuilder):
         self.sparse_kv_indices = torch.zeros(max_blocks, dtype=i32, device=dev)
         self.kv_last_page_len = torch.ones(eff_max, dtype=i32, device=dev)
 
-        ws = torch.empty(256 * 1024 * 1024, dtype=torch.uint8, device=dev)
+        ws = torch.empty(128 * 1024 * 1024, dtype=torch.uint8, device=dev)
         self.decode_wrappers = [
             BatchDecodeWithPagedKVCacheWrapper(ws, "NHD", use_tensor_cores=True),
             BatchDecodeWithPagedKVCacheWrapper(ws, "NHD", use_tensor_cores=True),
@@ -194,7 +198,7 @@ class VortexFlashInferMetadataBuilder(AttentionMetadataBuilder):
         self.q_dtype = mc.dtype
         self.sm_scale = self.head_dim ** -0.5
 
-        self._init_reorder_batch_threshold(1, supports_spec_as_decode=False)
+        self._init_reorder_batch_threshold(1, supports_spec_as_decode=True)
 
         # ---- FULL-capture support ------------------------------------------
         # Per padded-batch-size wrapper pairs, constructed over SLICES of the
@@ -276,11 +280,14 @@ class VortexFlashInferMetadataBuilder(AttentionMetadataBuilder):
               fast_build: bool = False) -> VortexAttnMetadata:
         m = common_attn_metadata
         nd_reqs, np_reqs, nd_toks, np_toks = split_decodes_and_prefills(
-            m, decode_threshold=1)
+            m, decode_threshold=self.reorder_batch_threshold or 1,
+            require_uniform=True)
 
-        eff = nd_reqs * self.num_kv_heads
         max_block_len = 0
         if np_reqs == 0 and nd_reqs > 0:
+            dql = nd_toks // nd_reqs
+            assert nd_toks == nd_reqs * dql, "non-uniform decode batch"
+            eff = nd_toks * self.num_kv_heads
             # ---- pure uniform decode: FULL-graph path ----------------------
             assert self.cfg.schedule_policy is None, \
                 "custom schedule_policy not supported on the capture path"
@@ -288,7 +295,20 @@ class VortexFlashInferMetadataBuilder(AttentionMetadataBuilder):
                 sl_cpu = m.seq_lens_cpu
             except (AssertionError, AttributeError):
                 sl_cpu = m.seq_lens.cpu()
-            d_cpu, s_cpu, lpl_cpu, _ = self._host_csr(sl_cpu, nd_reqs)
+            sl_dev = m.seq_lens[:nd_reqs]
+            bt_dev = m.block_table_tensor[:nd_reqs]
+            if dql > 1:
+                # token t of request r attends to seq_len_r - (dql-1) + t
+                # tokens -- earlier draft tokens included (their K/V is
+                # already scattered before attention runs).
+                off = torch.arange(dql, dtype=torch.int32)
+                sl_cpu = (sl_cpu[:nd_reqs, None].to(torch.int32)
+                          - (dql - 1) + off[None, :]).reshape(-1).clamp_(min=0)
+                sl_dev = (sl_dev[:, None].to(torch.int32)
+                          - (dql - 1) + off[None, :].to(sl_dev.device)
+                          ).reshape(-1).clamp_(min=0)
+                bt_dev = bt_dev.repeat_interleave(dql, dim=0)
+            d_cpu, s_cpu, lpl_cpu, _ = self._host_csr(sl_cpu, nd_toks)
             max_block_len = self.static_max_blk
             wr = self._get_graph_wrappers(eff)
             common = dict(num_qo_heads=self.group_size, num_kv_heads=1,
@@ -306,9 +326,9 @@ class VortexFlashInferMetadataBuilder(AttentionMetadataBuilder):
                        last_page_len=lpl_cpu, **common)
             from .planner import launch_indices_kernel
             launch_indices_kernel(
-                block_table=m.block_table_tensor[:nd_reqs],
-                seq_lens=m.seq_lens[:nd_reqs],
-                num_reqs=nd_reqs, num_kv_heads=self.num_kv_heads,
+                block_table=bt_dev.contiguous(),
+                seq_lens=sl_dev,
+                num_reqs=nd_toks, num_kv_heads=self.num_kv_heads,
                 block_size=self.vortex_block, num_blocks_per_page=1,
                 cfg=self.cfg,
                 dense_kv_indptr=self.dense_kv_indptr,
@@ -316,20 +336,18 @@ class VortexFlashInferMetadataBuilder(AttentionMetadataBuilder):
                 sparse_kv_indptr=self.sparse_kv_indptr,
                 sparse_kv_indices=self.sparse_kv_indices,
                 kv_last_page_len=self.kv_last_page_len)
-            # fixed-shape forward_cache worklist: a decode step writes the
-            # token at position seq_len-1; the block closes iff seq_len % 64
-            # == 0. Non-closing rows -> null page 0. In-place, capture-safe.
-            sl_d = m.seq_lens[:nd_reqs].long()
-            closing = (sl_d % self.vortex_block == 0) & (sl_d > 0)
-            blk_pos = ((sl_d - 1).clamp_min(0)) // self.vortex_block
-            mgr = m.block_table_tensor[:nd_reqs].gather(
-                1, blk_pos.unsqueeze(1)).squeeze(1).long()
-            heads = torch.arange(self.num_kv_heads, device=sl_d.device)
-            pages = torch.where(closing, mgr, torch.zeros_like(mgr))
+            # fixed-shape forward_cache worklist, from slot_mapping: one
+            # slot per (token, head); non-closing rows redirect to the null
+            # block's pages (physical block 0 is never allocated). Correct
+            # for dql > 1 (any draft token can close a block) and refires on
+            # spec-decode rejection rewrites.
+            slots = m.slot_mapping[:nd_toks]
+            closing = (slots >= 0) & ((slots + 1) % self.vortex_block == 0)
+            kb = torch.where(closing, slots // self.vortex_block,
+                             torch.zeros_like(slots))
+            heads = torch.arange(self.num_kv_heads, device=slots.device)
             self.fixed_worklist[:eff] = (
-                pages[:, None] * self.num_kv_heads + heads[None, :]).reshape(-1)
-            self.fixed_worklist[:eff][
-                ~closing.repeat_interleave(self.num_kv_heads)] = 0
+                kb[:, None] * self.num_kv_heads + heads[None, :]).reshape(-1)
             return VortexAttnMetadata(
                 decode_wrappers=wr, eff_bs=eff, num_decodes=nd_reqs,
                 num_decode_tokens=nd_toks,
@@ -340,11 +358,22 @@ class VortexFlashInferMetadataBuilder(AttentionMetadataBuilder):
                 num_prefills=0, num_prefill_tokens=0, prefill_wrapper=None,
                 newly_completed_pages=self.fixed_worklist[:eff])
 
+        eff = 0
         if nd_reqs > 0:
+            dql = nd_toks // nd_reqs
+            eff = nd_toks * self.num_kv_heads
+            sl_dev = m.seq_lens[:nd_reqs]
+            bt_dev = m.block_table_tensor[:nd_reqs]
+            if dql > 1:
+                off = torch.arange(dql, dtype=torch.int32,
+                                   device=sl_dev.device)
+                sl_dev = (sl_dev[:, None].to(torch.int32) - (dql - 1)
+                          + off[None, :]).reshape(-1).clamp_(min=0)
+                bt_dev = bt_dev.repeat_interleave(dql, dim=0).contiguous()
             plan_decode_sparse(
-                block_table=m.block_table_tensor[:nd_reqs],
-                seq_lens=m.seq_lens[:nd_reqs],
-                num_reqs=nd_reqs, num_kv_heads=self.num_kv_heads,
+                block_table=bt_dev,
+                seq_lens=sl_dev,
+                num_reqs=nd_toks, num_kv_heads=self.num_kv_heads,
                 block_size=self.vortex_block, num_blocks_per_page=1,
                 cfg=self.cfg,
                 dense_kv_indptr=self.dense_kv_indptr,
