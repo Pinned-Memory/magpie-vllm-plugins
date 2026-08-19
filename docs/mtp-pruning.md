@@ -103,6 +103,23 @@ baseline.
   its fitting corpus, which costs roughly 15–20% of L. Re-count on your real
   traffic; do not ship someone else's keep-set.
 
+## Benchmarking
+
+`scripts/mtp_pruning/sweetspot.sh` sweeps (MTP off / on / pruned) ×
+input-length × concurrency on controlled datasets, with a cold prefix cache
+per run and both throughput views: `output_throughput_tps` (prefill in the
+denominator) and `tpot_implied_decode_tps` (decode-only). Two dataset modes:
+
+- `DATASET=random` (default): exact-length synthetic prompts — use for
+  head-cost and prefill/decode scaling. Acceptance on random tokens is NOT
+  representative (measured: L≈1.85 vs ≈3.0 on real agent traffic).
+- `DATASET=sharegpt`: real conversations (`SHAREGPT_PATH`) — acceptance is
+  meaningful for chat-style traffic, and stresses an agent-fitted keep-set
+  out-of-distribution.
+
+Requires `pandas` in the vLLM venv (`vllm[bench]`). For production numbers,
+replay your own captured traffic instead.
+
 ## Limitations
 
 - Qwen3.5 MTP architectures only (`Qwen3_5MTP`, `Qwen3_5MoeMTP`); the
