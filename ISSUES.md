@@ -96,14 +96,56 @@ occupancy.
 the last token's query, or union of per-token holes) as a config knob —
 trades a little verify fidelity for (k+1)x fewer selection reads.
 
-## P2-4 · sparse-attention: above-crossover sparse+MTP throughput unmeasured
+## P2-4 · sparse-attention: sparse+MTP crossover — MEASURED to 112K resident (GPU-busy win confirmed; wall win gated on P2-5)
 
-**Evidence:** every attempt to co-locate MTP (draft weights + ~3x mamba
-state per request) with >= 4x16K resident KV and our unbudgeted aux on the
-32 GB card failed on memory; the composed measurement exists only at
-residency 1 (below the ~64K crossover). Blocked by P1-1; alternatively
-measurable on a larger GPU. The non-MTP magnitude (1.14x at 160K resident)
-plus P2-3's discount is the current best estimate.
+**Evidence (post-P1-2 fix):** the group fix also unblocked multi-request
+MTP on the 32 GB card (the old co-location failures were under the
+65-group layout). Residency sweep, 16K/request, k=3, FULL capture
+(`profile_decode.py --capture 4,8,16,32`):
+
+| resident KV | stock wall / GPU busy | sparse wall / GPU busy |
+|---|---|---|
+| 1x16K | 21.2 / 22.0 ms | 22.6 / 22.5 ms |
+| 2x16K | 21.4 / 22.5 | 22.2 / 22.2 |
+| 4x16K | 22.6 / 23.8 | 23.2 / 22.8 |
+| 6x16K | 24.4 / 25.8 | 24.6 / 24.0 |
+
+GPU-busy crossover lands at ~64K resident and grows linearly (-1.0 ms at
+64K, -1.8 ms at 96K): dense verify reads scale with resident KV, sparse
+selection stays flat. Wall stays a tie because sparse is host-limited at
+98-99% utilization (P2-5) while stock overlaps to 106%. Capacity win at
+the card ceiling: sparse boots at kv=8.8 GiB and serves 7x16K residents
+(983 tok/s decode-phase) vs stock's kv~8.2 cap and 6 residents
+(~830-875 tok/s; stock's own workspaces OOM above that) — +12-18%
+aggregate. Same-residency tok/s deltas ride acceptance noise
+(+-0.5-1 tokens/step run-to-run); step time and GPU busy are the stable
+metrics. Chrome traces of the 96K-resident pair: `traces/` (untracked).
+
+**Remaining:** >128K resident needs P1-1 or a bigger GPU. On this card
+attention is ~3 ms of a ~24 ms GEMM-dominated step, capping the possible
+wall win at a few percent; the linear GPU savings vs fixed ~1-2 ms folded
+tax (P2-2) project clear wins at DGX-Spark-scale residency, consistent
+with the non-MTP 1.14x at 160K.
+
+## P2-5 · sparse-attention: drafter-side build blocks on a seq_lens D2H sync
+
+**Evidence:** instrumented residency-1 step: the 3 drafter-invoked
+`vortex.build` calls block ~17 ms total inside `spec.propose`, waiting on
+the busy stream. Verified source: `llm_base_proposer.py:685` nulls the
+metadata's `_seq_lens_cpu` after adjusting device `seq_lens` in place
+("Invalidate the CPU-side shadows to avoid H<>D sync"), so our capture
+path's `m.seq_lens_cpu` access lazily runs `seq_lens.to("cpu")` — a
+blocking D2H against the in-flight step, once per draft step. Below the
+crossover it hides under GPU time (wall impact ~0); at >=96K resident it
+is exactly what keeps P2-4's measured GPU-busy win (-1.8 ms) out of the
+wall number (sparse pipelines at 98-99% vs stock 106%).
+
+**Fix sketch:** stop touching `seq_lens_cpu` in the capture path when the
+CPU shadow is invalidated — derive the drafter rows' host CSR from the
+target step's host seq_lens plus the per-draft-step +1 offsets (the
+drafter mutation is exactly `seq_lens += 1` per step, minus rejected
+tokens available host-side), or keep a persistent pinned mirror updated
+without sync. Est. converts 96K-resident wall to ~24.0 vs stock 24.4.
 
 ## P3 · sparse-attention: unported vortex features
 

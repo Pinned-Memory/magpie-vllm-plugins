@@ -26,6 +26,8 @@ ap.add_argument("--steps", type=int, default=30)
 ap.add_argument("--kv-gib", type=float, default=0.0)
 ap.add_argument("--mtp", type=int, default=0)
 ap.add_argument("--util", type=float, default=0.0)
+ap.add_argument("--capture", default="", help="comma-separated cudagraph capture sizes override (tokens, i.e. (1+mtp)*bs)")
+ap.add_argument("--trace", default="", help="export a chrome trace of the profiled steps to this path (CUPTI needs a few hundred MB of free GPU memory or the trace comes back empty)")
 args = ap.parse_args()
 
 additional_config = {}
@@ -54,7 +56,9 @@ from transformers import AutoTokenizer
 _kw = dict(model=MODEL, max_model_len=20480, enforce_eager=not args.compile,
            gpu_memory_utilization=args.util or (0.80 if args.compile else 0.90),
            max_num_batched_tokens=2048, max_num_seqs=16,
-           compilation_config={"cudagraph_capture_sizes": [(1 + args.mtp) * b for b in ((1, 2) if args.mtp else (1, 2, 4, 8, 10, 16))]}
+           compilation_config={"cudagraph_capture_sizes":
+               [int(x) for x in args.capture.split(",")] if args.capture
+               else [(1 + args.mtp) * b for b in ((1, 2) if args.mtp else (1, 2, 4, 8, 10, 16))]}
            if args.compile else None,
            additional_config=additional_config,
            trust_remote_code=True)
@@ -130,6 +134,9 @@ with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:
         eng.step()
     torch.cuda.synchronize()
 
+if args.trace:
+    prof.export_chrome_trace(args.trace)
+    print(f"chrome trace written: {args.trace}")
 evs = prof.key_averages()
 cuda_total = sum(e.self_device_time_total for e in evs) / 1e6 / args.steps
 cpu_total = sum(e.self_cpu_time_total for e in evs) / 1e6 / args.steps
