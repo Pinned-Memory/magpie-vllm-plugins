@@ -51,6 +51,10 @@ Scripts run with the vLLM environment's Python and need nothing extra:
 /path/to/vllm-venv/bin/python scripts/mtp_pruning/count_tokens.py --help
 ```
 
+## Issues
+
+Known issues, measured evidence, and fix sketches: [ISSUES.md](ISSUES.md).
+
 ## Layout
 
 ```
