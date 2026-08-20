@@ -13,6 +13,8 @@ Input files, decided per line:
   - JSON object with "messages": an OpenAI-style chat record — every
     assistant message is counted (its content plus a rendering of any
     tool_calls arguments);
+  - JSON object with "conversations": a ShareGPT record — every
+    "from": "gpt" turn is counted;
   - JSON object with "text" (or "content", or "response"): that string;
   - JSON string: the string itself;
   - anything else / non-JSON: the raw line is counted as text.
@@ -46,6 +48,11 @@ def _extract_texts(line: str) -> list[str]:
         return [rec]
     if not isinstance(rec, dict):
         return [line]
+    if "conversations" in rec and isinstance(rec["conversations"], list):
+        # ShareGPT record: count only the assistant ("gpt") turns
+        return [t["value"] for t in rec["conversations"]
+                if isinstance(t, dict) and t.get("from") in ("gpt", "assistant")
+                and t.get("value")]
     if "messages" in rec and isinstance(rec["messages"], list):
         out = []
         for m in rec["messages"]:

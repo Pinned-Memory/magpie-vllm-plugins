@@ -120,6 +120,14 @@ denominator) and `tpot_implied_decode_tps` (decode-only). Two dataset modes:
 Requires `pandas` in the vLLM venv (`vllm[bench]`). For production numbers,
 replay your own captured traffic instead.
 
+Keep-sets are workload-specific — measured cross-coverage on GB10: an
+agent-fitted 99% set (7,696 ids) covers only ~73% of ShareGPT chat
+generations, while chat needs ~49k ids for 99% (general multilingual text
+touches half the vocabulary). `count_tokens.py` reads ShareGPT records
+natively (`conversations`/`from: gpt`), so recalibrating is: count the new
+corpus, then `np.union1d` the keep-sets — a ~50k-id union covers 99%+ of
+both at a still-5× head shrink.
+
 ## Limitations
 
 - Qwen3.5 MTP architectures only (`Qwen3_5MTP`, `Qwen3_5MoeMTP`); the
