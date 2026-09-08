@@ -1,194 +1,194 @@
-(APIServer pid=42245) INFO 09-03 19:33:23 [api_utils.py:347] 
-(APIServer pid=42245) INFO 09-03 19:33:23 [api_utils.py:347]        █     █     █▄   ▄█
-(APIServer pid=42245) INFO 09-03 19:33:23 [api_utils.py:347]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.29.0rc1
-(APIServer pid=42245) INFO 09-03 19:33:23 [api_utils.py:347]   █▄█▀ █     █     █     █  model   /home/cc2869/.cache/huggingface/hub/models--Inferact--Qwen3.8-Flash-Next-NVFP4/snapshots/103a7608316173ca6edd49929544244de7ffda70
-(APIServer pid=42245) INFO 09-03 19:33:23 [api_utils.py:347]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
-(APIServer pid=42245) INFO 09-03 19:33:23 [api_utils.py:347] 
-(APIServer pid=42245) INFO 09-03 19:33:23 [api_utils.py:286] non-default args: {'model_tag': '/home/cc2869/.cache/huggingface/hub/models--Inferact--Qwen3.8-Flash-Next-NVFP4/snapshots/103a7608316173ca6edd49929544244de7ffda70', 'enable_auto_tool_choice': True, 'tool_call_parser': 'qwen3_xml', 'port': 8100, 'model': '/home/cc2869/.cache/huggingface/hub/models--Inferact--Qwen3.8-Flash-Next-NVFP4/snapshots/103a7608316173ca6edd49929544244de7ffda70', 'max_model_len': 65536, 'served_model_name': ['Qwen/Qwen3.8-Flash-Next'], 'hf_overrides': {'ple_mmap': True}, 'reasoning_parser': 'qwen3', 'gpu_memory_utilization': 0.76, 'enable_prefix_caching': True, 'language_model_only': True, 'max_num_seqs': 4, 'enable_flashinfer_autotune': False, 'speculative_config': {'method': 'mtp', 'num_speculative_tokens': 3, 'draft_vocab_path': '/home/cc2869/research/magpie/magpie-spark-vllm/scripts/flash_next/results/keep_flashnext_p99.pt'}}
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) INFO 09-03 19:33:23 [model.py:684] Resolved architecture: Qwen4ExpForConditionalGeneration
-(APIServer pid=42245) INFO 09-03 19:33:23 [model.py:2021] Using max model len 65536
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) [ERROR] `min_frames` is part of Qwen3VLVideoProcessorInitKwargs, but not documented. Make sure to add it to the docstring of the function in /home/cc2869/research/magpie/.venv/lib/python3.12/site-packages/transformers/models/qwen3_vl/video_processing_qwen3_vl.py.
-(APIServer pid=42245) [ERROR] `max_frames` is part of Qwen3VLVideoProcessorInitKwargs, but not documented. Make sure to add it to the docstring of the function in /home/cc2869/research/magpie/.venv/lib/python3.12/site-packages/transformers/models/qwen3_vl/video_processing_qwen3_vl.py.
-(APIServer pid=42245) INFO 09-03 19:33:24 [registry.py:141] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
-(APIServer pid=42245) INFO 09-03 19:33:24 [model.py:887] Disabled mm_prefix attention mode because multimodal inputs are configuration-disabled. Attention backends without mm_prefix support may now be selected.
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) INFO 09-03 19:33:24 [model.py:684] Resolved architecture: Qwen4ExpMTP
-(APIServer pid=42245) INFO 09-03 19:33:24 [model.py:2021] Using max model len 262144
-(APIServer pid=42245) WARNING 09-03 19:33:24 [speculative.py:1327] Enabling num_speculative_tokens > 1 will run multiple times of forward on same MTP layer,which may result in lower acceptance rate
-(APIServer pid=42245) INFO 09-03 19:33:24 [speculative.py:1595] Overriding draft model max model len from 262144 to 65536
-(APIServer pid=42245) INFO 09-03 19:33:24 [config.py:625] Mamba cache mode is set to 'align' for Qwen4ExpForConditionalGeneration by default when prefix caching is enabled
-(APIServer pid=42245) WARNING 09-03 19:33:24 [modelopt.py:1029] Detected ModelOpt NVFP4 checkpoint (quant_algo=NVFP4). Please note that the format is experimental and could change in future.
-(APIServer pid=42245) INFO 09-03 19:33:24 [kernel.py:369] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'])
-(APIServer pid=42245) WARNING 09-03 19:33:24 [vllm.py:1924] max_num_scheduled_tokens is set to 2048 based on the speculative decoding settings. This may lead to suboptimal performance. Consider increasing max_num_batched_tokens to accommodate the additional draft token slots, or decrease num_speculative_tokens.
-(APIServer pid=42245) INFO 09-03 19:33:24 [compilation.py:329] Enabled custom fusions: act_quant
-(EngineCore pid=42392) INFO 09-03 19:33:31 [core.py:123] Initializing a V1 LLM engine (v0.29.0rc1) with config: model='/home/cc2869/.cache/huggingface/hub/models--Inferact--Qwen3.8-Flash-Next-NVFP4/snapshots/103a7608316173ca6edd49929544244de7ffda70', speculative_config=SpeculativeConfig(method='mtp', model='/home/cc2869/.cache/huggingface/hub/models--Inferact--Qwen3.8-Flash-Next-NVFP4/snapshots/103a7608316173ca6edd49929544244de7ffda70', num_spec_tokens=3), tokenizer='/home/cc2869/.cache/huggingface/hub/models--Inferact--Qwen3.8-Flash-Next-NVFP4/snapshots/103a7608316173ca6edd49929544244de7ffda70', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=65536, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=modelopt_fp4, quantization_config=None, enforce_eager=False, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='qwen3', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, per_request_spec_decode_metrics='none', kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_mode='warn', jit_monitor_verbose=False), seed=0, served_model_name=Qwen/Qwen3.8-Flash-Next, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'ir_enable_torch_wrap': True, 'splitting_ops': ['vllm::unified_attention_with_output', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::qwen4_exp_compute_ple_ngram_ids', 'vllm::qwen4_exp_ple_short_conv', 'vllm::qwen4_exp_qsa_with_output', 'vllm::linear_attention', 'vllm::qwen_gdn_attention_core', 'vllm::qwen_gdn_attention_core_fused_norm_packed', 'vllm::gdn_attention_core_xpu', 'vllm::olmo_hybrid_gdn_full_forward', 'vllm::sparse_attn_indexer', 'vllm::rocm_aiter_sparse_attn_indexer', 'vllm::deepseek_v4_attention', 'vllm::hpc_rope_norm_forward', 'vllm::unified_kv_cache_update', 'vllm::unified_mla_kv_cache_update'], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [2048], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False, 'enable_qk_norm_rope_fusion': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False, 'fuse_qk_norm_rope_kvcache': False}, 'max_cudagraph_capture_size': 32, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native']), enable_flashinfer_autotune=False, enable_cutedsl_warmup=True, enable_jit_warmup=True, enable_bf16x3_router_gemm=False, moe_backend='auto', linear_backend='auto')
-(EngineCore pid=42392) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(EngineCore pid=42392) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(EngineCore pid=42392) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(EngineCore pid=42392) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(EngineCore pid=42392) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(EngineCore pid=42392) [ERROR] `min_frames` is part of Qwen3VLVideoProcessorInitKwargs, but not documented. Make sure to add it to the docstring of the function in /home/cc2869/research/magpie/.venv/lib/python3.12/site-packages/transformers/models/qwen3_vl/video_processing_qwen3_vl.py.
-(EngineCore pid=42392) [ERROR] `max_frames` is part of Qwen3VLVideoProcessorInitKwargs, but not documented. Make sure to add it to the docstring of the function in /home/cc2869/research/magpie/.venv/lib/python3.12/site-packages/transformers/models/qwen3_vl/video_processing_qwen3_vl.py.
-(EngineCore pid=42392) INFO 09-03 19:33:31 [registry.py:141] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
-(EngineCore pid=42392) INFO 09-03 19:33:31 [parallel_state.py:1775] world_size=1 rank=0 local_rank=0 distributed_init_method=file:///tmp/vllm_dist_7dc53fa43ec44bc6af732aab93e5ff00 backend=nccl
-(EngineCore pid=42392) INFO 09-03 19:33:31 [parallel_state.py:2119] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0, EPLB rank N/A
-(EngineCore pid=42392) INFO 09-03 19:33:31 [gpu_worker.py:426] Using V2 Model Runner
-(EngineCore pid=42392) INFO 09-03 19:33:32 [model_runner.py:382] Loading model from scratch...
-(EngineCore pid=42392) INFO 09-03 19:33:32 [qwen_gdn_linear_attn.py:167] Using Triton/FLA GDN prefill kernel (requested=auto, head_k_dim=128).
-(EngineCore pid=42392) INFO 09-03 19:33:32 [qwen_gdn_linear_attn.py:519] GDN decode kernel: cuda
-(EngineCore pid=42392) INFO 09-03 19:33:33 [nvfp4.py:304] Using 'FLASHINFER_CUTLASS' NvFp4 MoE backend out of potential backends: ['FLASHINFER_TRTLLM', 'FLASHINFER_CUTEDSL', 'FLASHINFER_CUTEDSL_BATCHED', 'FLASHINFER_CUTLASS', 'VLLM_CUTLASS', 'MARLIN', 'HUMMING', 'EMULATION'].
-(EngineCore pid=42392) INFO 09-03 19:33:33 [flash_attn.py:897] Using FlashAttention version 2
-(EngineCore pid=42392) INFO 09-03 19:33:36 [weight_utils.py:863] Filesystem type for checkpoints: EXT4. Checkpoint size: 170.23 GiB. Available RAM: 41.61 GiB.
-(EngineCore pid=42392) INFO 09-03 19:33:36 [weight_utils.py:893] Auto-prefetch is disabled because the filesystem (EXT4) is not a recognized network FS (NFS/Lustre) and the checkpoint size (170.23 GiB) exceeds 90% of available RAM (41.61 GiB).
-(EngineCore pid=42392) Loading safetensors checkpoint shards:   0% Completed | 0/21 [00:00<?, ?it/s]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  10% Completed | 2/21 [00:26<04:11, 13.23s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  14% Completed | 3/21 [00:53<05:44, 19.12s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  24% Completed | 5/21 [01:19<04:09, 15.62s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  29% Completed | 6/21 [01:45<04:38, 18.60s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  33% Completed | 7/21 [02:10<04:46, 20.49s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  38% Completed | 8/21 [02:36<04:45, 21.95s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  43% Completed | 9/21 [02:59<04:28, 22.41s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  48% Completed | 10/21 [03:23<04:12, 22.94s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  52% Completed | 11/21 [03:48<03:54, 23.41s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  57% Completed | 12/21 [04:11<03:29, 23.29s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  62% Completed | 13/21 [04:34<03:05, 23.21s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  67% Completed | 14/21 [04:57<02:41, 23.10s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  71% Completed | 15/21 [05:20<02:19, 23.19s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  76% Completed | 16/21 [05:45<01:58, 23.71s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  81% Completed | 17/21 [06:10<01:36, 24.07s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  86% Completed | 18/21 [06:35<01:13, 24.40s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  90% Completed | 19/21 [07:01<00:49, 24.67s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  95% Completed | 20/21 [07:25<00:24, 24.72s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards: 100% Completed | 21/21 [07:26<00:00, 17.58s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards: 100% Completed | 21/21 [07:26<00:00, 21.28s/it]
-(EngineCore pid=42392) 
-(EngineCore pid=42392) INFO 09-03 19:41:04 [default_loader.py:430] Loading weights took 447.39 seconds
-(EngineCore pid=42392) INFO 09-03 19:41:04 [nvfp4.py:613] Using MoEPrepareAndFinalizeNoDPEPModular
-(EngineCore pid=42392) WARNING 09-03 19:41:10 [modelopt.py:1029] Detected ModelOpt NVFP4 checkpoint (quant_algo=NVFP4). Please note that the format is experimental and could change in future.
-(EngineCore pid=42392) INFO 09-03 19:41:10 [kernel.py:369] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'])
-(EngineCore pid=42392) WARNING 09-03 19:41:10 [vllm.py:1924] max_num_scheduled_tokens is set to 2048 based on the speculative decoding settings. This may lead to suboptimal performance. Consider increasing max_num_batched_tokens to accommodate the additional draft token slots, or decrease num_speculative_tokens.
-(EngineCore pid=42392) INFO 09-03 19:41:10 [compilation.py:329] Enabled custom fusions: act_quant
-(EngineCore pid=42392) INFO 09-03 19:41:10 [mtp.py:428] MTP draft vocab pruned: 10010 of 248320 ids (4.03%), keep-set /home/cc2869/research/magpie/magpie-spark-vllm/scripts/flash_next/results/keep_flashnext_p99.pt
-(EngineCore pid=42392) INFO 09-03 19:41:11 [weight_utils.py:863] Filesystem type for checkpoints: EXT4. Checkpoint size: 170.23 GiB. Available RAM: 39.95 GiB.
-(EngineCore pid=42392) INFO 09-03 19:41:11 [weight_utils.py:893] Auto-prefetch is disabled because the filesystem (EXT4) is not a recognized network FS (NFS/Lustre) and the checkpoint size (170.23 GiB) exceeds 90% of available RAM (39.95 GiB).
-(EngineCore pid=42392) Loading safetensors checkpoint shards:   0% Completed | 0/21 [00:00<?, ?it/s]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  10% Completed | 2/21 [00:09<01:34,  4.98s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  14% Completed | 3/21 [00:10<00:53,  2.97s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  24% Completed | 5/21 [00:12<00:32,  2.01s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  29% Completed | 6/21 [00:15<00:32,  2.20s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  33% Completed | 7/21 [00:17<00:32,  2.34s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  38% Completed | 8/21 [00:20<00:30,  2.34s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  43% Completed | 9/21 [00:22<00:29,  2.43s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  48% Completed | 10/21 [00:25<00:26,  2.41s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  52% Completed | 11/21 [00:27<00:23,  2.36s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  57% Completed | 12/21 [00:29<00:20,  2.28s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  62% Completed | 13/21 [00:31<00:17,  2.24s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  67% Completed | 14/21 [00:34<00:15,  2.27s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  71% Completed | 15/21 [00:36<00:13,  2.22s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  76% Completed | 16/21 [00:36<00:08,  1.77s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  81% Completed | 17/21 [00:37<00:05,  1.29s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  86% Completed | 18/21 [00:37<00:02,  1.04it/s]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  90% Completed | 19/21 [00:37<00:01,  1.35it/s]
-(EngineCore pid=42392) Loading safetensors checkpoint shards:  95% Completed | 20/21 [00:37<00:00,  1.75it/s]
-(EngineCore pid=42392) Loading safetensors checkpoint shards: 100% Completed | 21/21 [00:48<00:00,  3.60s/it]
-(EngineCore pid=42392) Loading safetensors checkpoint shards: 100% Completed | 21/21 [00:48<00:00,  2.30s/it]
-(EngineCore pid=42392) 
-(EngineCore pid=42392) INFO 09-03 19:41:59 [default_loader.py:430] Loading weights took 48.51 seconds
-(EngineCore pid=42392) INFO 09-03 19:42:08 [model_runner.py:404] Model loading took 74.57 GiB memory and 515.771347 seconds
-(EngineCore pid=42392) INFO 09-03 19:42:08 [topk_topp_sampler.py:62] Using FlashInfer for top-p & top-k sampling.
-(EngineCore pid=42392) INFO 09-03 19:42:08 [interface.py:918] Setting attention block size to 1600 tokens to ensure that attention page size is >= mamba page size.
-(EngineCore pid=42392) INFO 09-03 19:42:08 [interface.py:942] Padding mamba page size by 0.25% to ensure that mamba page size and attention page size are exactly equal.
-(EngineCore pid=42392) INFO 09-03 19:42:08 [utils.py:306] Using BLNHC KV cache layout.
-(EngineCore pid=42392) INFO 09-03 19:42:10 [caching.py:343] reconstructed serializable fn from standalone compile artifacts. num_artifacts=18 num_submods=50
-(EngineCore pid=42392) INFO 09-03 19:42:10 [decorators.py:313] Directly load AOT compilation from path /home/cc2869/.cache/vllm/torch_compile_cache/torch_aot_compile/ebe804f881760e819e57850e7d2b6f6b82686f8df8ac91e98f26426ba2e293ad/rank_0_0/model
-(EngineCore pid=42392) INFO 09-03 19:42:10 [monitor.py:53] torch.compile took 0.34 s in total
-(EngineCore pid=42392) INFO 09-03 19:42:12 [monitor.py:81] Initial profiling/warmup run took 2.25 s
-(EngineCore pid=42392) INFO 09-03 19:42:13 [caching.py:343] reconstructed serializable fn from standalone compile artifacts. num_artifacts=2 num_submods=2
-(EngineCore pid=42392) INFO 09-03 19:42:13 [decorators.py:313] Directly load AOT compilation from path /home/cc2869/.cache/vllm/torch_compile_cache/torch_aot_compile/9f2a803031b1472c6c89858826b02fa95427fdbd065914044bc7d82b35722047/rank_0_0/model
-(EngineCore pid=42392) INFO 09-03 19:42:13 [monitor.py:53] torch.compile took 0.05 s in total
-(EngineCore pid=42392) INFO 09-03 19:42:13 [monitor.py:81] Initial profiling/warmup run took 0.00 s
-(EngineCore pid=42392) WARNING 09-03 19:42:13 [kv_cache_utils.py:1893] Speculative decoding (method=mtp) is enabled but no KV cache group could be identified as the draft model's, so every group -- including Mamba groups [0, 1, 2, 3] -- will be treated as a draft group. A Mamba group cannot satisfy the widened lookup window that implies, so prefix-cache reuse across requests will be disabled and any external KV offload tier will store without ever serving a hit.
-(EngineCore pid=42392) INFO 09-03 19:42:13 [speculator.py:120] Fused multi-step draft decode is not supported by attention backend(s) QWEN4_EXP_EXP_QSA_STATE; falling back to rebuilding attention metadata between draft steps.
-(EngineCore pid=42392) Capturing CUDA graphs (PIECEWISE):   0%|          | 0/7 [00:00<?, ?it/s]Capturing CUDA graphs (PIECEWISE):  14%|█▍        | 1/7 [00:00<00:02,  2.30it/s]Capturing CUDA graphs (PIECEWISE):  29%|██▊       | 2/7 [00:00<00:01,  2.87it/s]Capturing CUDA graphs (PIECEWISE):  43%|████▎     | 3/7 [00:00<00:01,  3.22it/s]Capturing CUDA graphs (PIECEWISE):  57%|█████▋    | 4/7 [00:01<00:00,  3.48it/s]Capturing CUDA graphs (PIECEWISE):  71%|███████▏  | 5/7 [00:01<00:00,  4.22it/s]Capturing CUDA graphs (PIECEWISE):  86%|████████▌ | 6/7 [00:01<00:00,  4.98it/s]Capturing CUDA graphs (PIECEWISE): 100%|██████████| 7/7 [00:01<00:00,  5.01it/s]Capturing CUDA graphs (PIECEWISE): 100%|██████████| 7/7 [00:01<00:00,  4.08it/s]
-(EngineCore pid=42392) Capturing CUDA graphs (FULL):   0%|          | 0/2 [00:00<?, ?it/s]Capturing CUDA graphs (FULL):  50%|█████     | 1/2 [00:00<00:00,  9.29it/s]Capturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00, 10.42it/s]
-(EngineCore pid=42392) INFO 09-03 19:42:15 [speculator.py:151] Capturing model for speculator...
-(EngineCore pid=42392) Capturing prefill CUDA graphs (PIECEWISE):   0%|          | 0/7 [00:00<?, ?it/s]Capturing prefill CUDA graphs (PIECEWISE): 100%|██████████| 7/7 [00:00<00:00, 86.43it/s]
-(EngineCore pid=42392) Capturing prefill CUDA graphs (FULL):   0%|          | 0/3 [00:00<?, ?it/s]Capturing prefill CUDA graphs (FULL): 100%|██████████| 3/3 [00:00<00:00, 79.34it/s]
-(EngineCore pid=42392) Capturing decode CUDA graphs (FULL):   0%|          | 0/3 [00:00<?, ?it/s]Capturing decode CUDA graphs (FULL): 100%|██████████| 3/3 [00:00<00:00, 121.25it/s]
-(EngineCore pid=42392) INFO 09-03 19:42:15 [model_runner.py:960] Graph capturing finished in 2 secs, took 0.62 GiB
-(EngineCore pid=42392) INFO 09-03 19:42:16 [gpu_worker.py:622] Available KV cache memory: 16.43 GiB
-(EngineCore pid=42392) INFO 09-03 19:42:16 [gpu_worker.py:637] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.7600 is equivalent to --gpu-memory-utilization=0.7548 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.7652. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
-(EngineCore pid=42392) WARNING 09-03 19:42:16 [kv_cache_utils.py:1893] Speculative decoding (method=mtp) is enabled but no KV cache group could be identified as the draft model's, so every group -- including Mamba groups [0, 1, 2, 3] -- will be treated as a draft group. A Mamba group cannot satisfy the widened lookup window that implies, so prefix-cache reuse across requests will be disabled and any external KV offload tier will store without ever serving a hit.
-(EngineCore pid=42392) INFO 09-03 19:42:16 [kv_cache_utils.py:2042] GPU KV cache size: 423,869 tokens, Maximum concurrency for 65,536 tokens per request: 6.47x
-(EngineCore pid=42392) INFO 09-03 19:42:18 [kernel_warmup.py:124] JIT kernel warmup starting.
-(EngineCore pid=42392) INFO 09-03 19:42:18 [kernel_warmup.py:134] JIT kernel warmup finished in 0.00s.
-(EngineCore pid=42392) INFO 09-03 19:42:18 [kernel_warmup.py:194] Skipping FlashInfer autotune because it is disabled.
-(EngineCore pid=42392) Capturing CUDA graphs (PIECEWISE):   0%|          | 0/7 [00:00<?, ?it/s]Capturing CUDA graphs (PIECEWISE):  14%|█▍        | 1/7 [00:00<00:02,  2.57it/s]Capturing CUDA graphs (PIECEWISE):  29%|██▊       | 2/7 [00:00<00:01,  3.26it/s]Capturing CUDA graphs (PIECEWISE):  43%|████▎     | 3/7 [00:00<00:01,  3.58it/s]Capturing CUDA graphs (PIECEWISE):  57%|█████▋    | 4/7 [00:01<00:00,  3.75it/s]Capturing CUDA graphs (PIECEWISE):  71%|███████▏  | 5/7 [00:01<00:00,  4.71it/s]Capturing CUDA graphs (PIECEWISE):  86%|████████▌ | 6/7 [00:01<00:00,  5.58it/s]Capturing CUDA graphs (PIECEWISE): 100%|██████████| 7/7 [00:01<00:00,  6.30it/s]Capturing CUDA graphs (PIECEWISE): 100%|██████████| 7/7 [00:01<00:00,  4.73it/s]
-(EngineCore pid=42392) Capturing CUDA graphs (FULL):   0%|          | 0/3 [00:00<?, ?it/s]Capturing CUDA graphs (FULL):  67%|██████▋   | 2/3 [00:00<00:00, 12.55it/s]Capturing CUDA graphs (FULL): 100%|██████████| 3/3 [00:00<00:00, 11.82it/s]
-(EngineCore pid=42392) INFO 09-03 19:42:20 [speculator.py:151] Capturing model for speculator...
-(EngineCore pid=42392) Capturing prefill CUDA graphs (PIECEWISE):   0%|          | 0/7 [00:00<?, ?it/s]Capturing prefill CUDA graphs (PIECEWISE): 100%|██████████| 7/7 [00:00<00:00, 91.22it/s]
-(EngineCore pid=42392) Capturing prefill CUDA graphs (FULL):   0%|          | 0/3 [00:00<?, ?it/s]Capturing prefill CUDA graphs (FULL): 100%|██████████| 3/3 [00:00<00:00, 114.44it/s]
-(EngineCore pid=42392) Capturing decode CUDA graphs (FULL):   0%|          | 0/3 [00:00<?, ?it/s]Capturing decode CUDA graphs (FULL): 100%|██████████| 3/3 [00:00<00:00, 112.11it/s]
-(EngineCore pid=42392) INFO 09-03 19:42:20 [model_runner.py:960] Graph capturing finished in 2 secs, took 0.20 GiB
-(EngineCore pid=42392) INFO 09-03 19:42:20 [gpu_worker.py:794] CUDA graph pool memory: 0.2 GiB (actual), 0.63 GiB (estimated), difference: 0.43 GiB (218.9%).
-(EngineCore pid=42392) INFO 09-03 19:42:20 [gpu_worker.py:857] Free memory on device (116.19/121.69 GiB) on startup. Desired GPU memory utilization is (0.76, 92.48 GiB). Actual usage is 75.08 GiB for consumed memory (weights + non-torch), 0.97 GiB for peak activation, and 0.2 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=17276105094` (16.09 GiB) to fit into requested memory, or `--kv-cache-memory=42732897792` (39.8 GiB) to fully utilize gpu memory. Current kv cache memory in use is 16.43 GiB.
-(EngineCore pid=42392) INFO 09-03 19:42:21 [jit_monitor.py:85] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
-(EngineCore pid=42392) INFO 09-03 19:42:22 [torch_utils.py:277] Reducing Torch threads from 20 to 1 for serving. Set OMP_NUM_THREADS in the external environment to override.
-(EngineCore pid=42392) INFO 09-03 19:42:22 [core.py:361] init engine (profile, create kv cache, warmup model) took 13.86 s (compilation: 0.39 s)
-(EngineCore pid=42392) INFO 09-03 19:42:22 [kernel.py:369] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'])
-(APIServer pid=42245) INFO 09-03 19:42:23 [entry.py:135] Supported tasks: ['generate']
-(APIServer pid=42245) INFO 09-03 19:42:27 [parser_manager.py:36] "auto" tool choice has been enabled.
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
-(APIServer pid=42245) INFO 09-03 19:42:29 [hf.py:547] Detected the chat template content format to be 'openai'. You can set `--chat-template-content-format` to override this.
-(APIServer pid=42245) WARNING 09-03 19:42:29 [model.py:1759] Default vLLM sampling parameters have been overridden by the model's `generation_config.json`: `{'temperature': 1.0, 'top_k': 20, 'top_p': 0.95}`. If this is not intended, please relaunch vLLM instance with `--generation-config vllm`.
-(APIServer pid=42245) INFO 09-03 19:42:29 [entry.py:139] Starting vLLM server on http://0.0.0.0:8100
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:61] Available routes are:
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /openapi.json, Methods: GET, HEAD
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /docs, Methods: GET, HEAD
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /docs/oauth2-redirect, Methods: GET, HEAD
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /redoc, Methods: GET, HEAD
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /load, Methods: GET
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /version, Methods: GET
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /health, Methods: GET
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /metrics, Methods: GET
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /tokenize, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /detokenize, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /v1/models, Methods: GET
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /ping, Methods: GET
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /ping, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /invocations, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /v1/chat/completions, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /v1/chat/completions/batch, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /v1/responses, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /v1/responses/{response_id}, Methods: GET
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /v1/responses/{response_id}/cancel, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /v1/completions, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /v1/messages, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /v1/messages/count_tokens, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /generative_scoring, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /scale_elastic_ep, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /is_scaling_elastic_ep, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /v1/chat/completions/render, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /v1/messages/render, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /v1/completions/render, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /v1/chat/completions/derender, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /v1/completions/derender, Methods: POST
-(APIServer pid=42245) INFO 09-03 19:42:29 [launcher.py:70] Route: /inference/v1/generate, Methods: POST
-(APIServer pid=42245) INFO:     Started server process [42245]
-(APIServer pid=42245) INFO:     Waiting for application startup.
-(APIServer pid=42245) INFO:     Application startup complete.
+(APIServer pid=828354) INFO 09-08 15:13:08 [api_utils.py:347] 
+(APIServer pid=828354) INFO 09-08 15:13:08 [api_utils.py:347]        █     █     █▄   ▄█
+(APIServer pid=828354) INFO 09-08 15:13:08 [api_utils.py:347]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.29.0rc1
+(APIServer pid=828354) INFO 09-08 15:13:08 [api_utils.py:347]   █▄█▀ █     █     █     █  model   /home/cc2869/.cache/huggingface/hub/models--Inferact--Qwen3.8-Flash-Next-NVFP4/snapshots/103a7608316173ca6edd49929544244de7ffda70
+(APIServer pid=828354) INFO 09-08 15:13:08 [api_utils.py:347]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
+(APIServer pid=828354) INFO 09-08 15:13:08 [api_utils.py:347] 
+(APIServer pid=828354) INFO 09-08 15:13:08 [api_utils.py:286] non-default args: {'model_tag': '/home/cc2869/.cache/huggingface/hub/models--Inferact--Qwen3.8-Flash-Next-NVFP4/snapshots/103a7608316173ca6edd49929544244de7ffda70', 'enable_auto_tool_choice': True, 'tool_call_parser': 'qwen3_xml', 'port': 8100, 'model': '/home/cc2869/.cache/huggingface/hub/models--Inferact--Qwen3.8-Flash-Next-NVFP4/snapshots/103a7608316173ca6edd49929544244de7ffda70', 'max_model_len': 65536, 'served_model_name': ['Qwen/Qwen3.8-Flash-Next'], 'hf_overrides': {'ple_mmap': True}, 'reasoning_parser': 'qwen3', 'gpu_memory_utilization': 0.76, 'enable_prefix_caching': True, 'language_model_only': True, 'max_num_seqs': 4, 'enable_flashinfer_autotune': False, 'speculative_config': {'method': 'mtp', 'num_speculative_tokens': 3, 'draft_vocab_path': '/home/cc2869/research/magpie/magpie-spark-vllm/scripts/flash_next/results/keep_flashnext_p99.pt'}}
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) INFO 09-08 15:13:08 [model.py:684] Resolved architecture: Qwen4ExpForConditionalGeneration
+(APIServer pid=828354) INFO 09-08 15:13:08 [model.py:2021] Using max model len 65536
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) [ERROR] `min_frames` is part of Qwen3VLVideoProcessorInitKwargs, but not documented. Make sure to add it to the docstring of the function in /home/cc2869/research/magpie/.venv/lib/python3.12/site-packages/transformers/models/qwen3_vl/video_processing_qwen3_vl.py.
+(APIServer pid=828354) [ERROR] `max_frames` is part of Qwen3VLVideoProcessorInitKwargs, but not documented. Make sure to add it to the docstring of the function in /home/cc2869/research/magpie/.venv/lib/python3.12/site-packages/transformers/models/qwen3_vl/video_processing_qwen3_vl.py.
+(APIServer pid=828354) INFO 09-08 15:13:09 [registry.py:141] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+(APIServer pid=828354) INFO 09-08 15:13:09 [model.py:887] Disabled mm_prefix attention mode because multimodal inputs are configuration-disabled. Attention backends without mm_prefix support may now be selected.
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) INFO 09-08 15:13:09 [model.py:684] Resolved architecture: Qwen4ExpMTP
+(APIServer pid=828354) INFO 09-08 15:13:09 [model.py:2021] Using max model len 262144
+(APIServer pid=828354) WARNING 09-08 15:13:09 [speculative.py:1327] Enabling num_speculative_tokens > 1 will run multiple times of forward on same MTP layer,which may result in lower acceptance rate
+(APIServer pid=828354) INFO 09-08 15:13:09 [speculative.py:1595] Overriding draft model max model len from 262144 to 65536
+(APIServer pid=828354) INFO 09-08 15:13:09 [config.py:625] Mamba cache mode is set to 'align' for Qwen4ExpForConditionalGeneration by default when prefix caching is enabled
+(APIServer pid=828354) WARNING 09-08 15:13:09 [modelopt.py:1029] Detected ModelOpt NVFP4 checkpoint (quant_algo=NVFP4). Please note that the format is experimental and could change in future.
+(APIServer pid=828354) INFO 09-08 15:13:09 [kernel.py:369] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'])
+(APIServer pid=828354) WARNING 09-08 15:13:09 [vllm.py:1924] max_num_scheduled_tokens is set to 2048 based on the speculative decoding settings. This may lead to suboptimal performance. Consider increasing max_num_batched_tokens to accommodate the additional draft token slots, or decrease num_speculative_tokens.
+(APIServer pid=828354) INFO 09-08 15:13:10 [compilation.py:329] Enabled custom fusions: act_quant
+(EngineCore pid=828501) INFO 09-08 15:13:15 [core.py:123] Initializing a V1 LLM engine (v0.29.0rc1) with config: model='/home/cc2869/.cache/huggingface/hub/models--Inferact--Qwen3.8-Flash-Next-NVFP4/snapshots/103a7608316173ca6edd49929544244de7ffda70', speculative_config=SpeculativeConfig(method='mtp', model='/home/cc2869/.cache/huggingface/hub/models--Inferact--Qwen3.8-Flash-Next-NVFP4/snapshots/103a7608316173ca6edd49929544244de7ffda70', num_spec_tokens=3), tokenizer='/home/cc2869/.cache/huggingface/hub/models--Inferact--Qwen3.8-Flash-Next-NVFP4/snapshots/103a7608316173ca6edd49929544244de7ffda70', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=65536, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=modelopt_fp4, quantization_config=None, enforce_eager=False, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='qwen3', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, per_request_spec_decode_metrics='none', kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_mode='warn', jit_monitor_verbose=False), seed=0, served_model_name=Qwen/Qwen3.8-Flash-Next, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'ir_enable_torch_wrap': True, 'splitting_ops': ['vllm::unified_attention_with_output', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::qwen4_exp_compute_ple_ngram_ids', 'vllm::qwen4_exp_ple_short_conv', 'vllm::qwen4_exp_qsa_with_output', 'vllm::linear_attention', 'vllm::qwen_gdn_attention_core', 'vllm::qwen_gdn_attention_core_fused_norm_packed', 'vllm::gdn_attention_core_xpu', 'vllm::olmo_hybrid_gdn_full_forward', 'vllm::sparse_attn_indexer', 'vllm::rocm_aiter_sparse_attn_indexer', 'vllm::deepseek_v4_attention', 'vllm::hpc_rope_norm_forward', 'vllm::unified_kv_cache_update', 'vllm::unified_mla_kv_cache_update'], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [2048], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False, 'enable_qk_norm_rope_fusion': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False, 'fuse_qk_norm_rope_kvcache': False}, 'max_cudagraph_capture_size': 32, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native']), enable_flashinfer_autotune=False, enable_cutedsl_warmup=True, enable_jit_warmup=True, enable_bf16x3_router_gemm=False, moe_backend='auto', linear_backend='auto')
+(EngineCore pid=828501) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(EngineCore pid=828501) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(EngineCore pid=828501) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(EngineCore pid=828501) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(EngineCore pid=828501) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(EngineCore pid=828501) [ERROR] `min_frames` is part of Qwen3VLVideoProcessorInitKwargs, but not documented. Make sure to add it to the docstring of the function in /home/cc2869/research/magpie/.venv/lib/python3.12/site-packages/transformers/models/qwen3_vl/video_processing_qwen3_vl.py.
+(EngineCore pid=828501) [ERROR] `max_frames` is part of Qwen3VLVideoProcessorInitKwargs, but not documented. Make sure to add it to the docstring of the function in /home/cc2869/research/magpie/.venv/lib/python3.12/site-packages/transformers/models/qwen3_vl/video_processing_qwen3_vl.py.
+(EngineCore pid=828501) INFO 09-08 15:13:16 [registry.py:141] All limits of multimodal modalities supported by the model are set to 0, running in text-only mode.
+(EngineCore pid=828501) INFO 09-08 15:13:16 [parallel_state.py:1775] world_size=1 rank=0 local_rank=0 distributed_init_method=file:///tmp/vllm_dist_6a89c697370c4c9383c82fb043cda465 backend=nccl
+(EngineCore pid=828501) INFO 09-08 15:13:16 [parallel_state.py:2119] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0, EPLB rank N/A
+(EngineCore pid=828501) INFO 09-08 15:13:16 [gpu_worker.py:426] Using V2 Model Runner
+(EngineCore pid=828501) INFO 09-08 15:13:17 [model_runner.py:382] Loading model from scratch...
+(EngineCore pid=828501) INFO 09-08 15:13:17 [qwen_gdn_linear_attn.py:167] Using Triton/FLA GDN prefill kernel (requested=auto, head_k_dim=128).
+(EngineCore pid=828501) INFO 09-08 15:13:17 [qwen_gdn_linear_attn.py:519] GDN decode kernel: cuda
+(EngineCore pid=828501) INFO 09-08 15:13:18 [nvfp4.py:304] Using 'FLASHINFER_CUTLASS' NvFp4 MoE backend out of potential backends: ['FLASHINFER_TRTLLM', 'FLASHINFER_CUTEDSL', 'FLASHINFER_CUTEDSL_BATCHED', 'FLASHINFER_CUTLASS', 'VLLM_CUTLASS', 'MARLIN', 'HUMMING', 'EMULATION'].
+(EngineCore pid=828501) INFO 09-08 15:13:18 [flash_attn.py:897] Using FlashAttention version 2
+(EngineCore pid=828501) INFO 09-08 15:13:21 [weight_utils.py:863] Filesystem type for checkpoints: EXT4. Checkpoint size: 170.23 GiB. Available RAM: 41.25 GiB.
+(EngineCore pid=828501) INFO 09-08 15:13:21 [weight_utils.py:893] Auto-prefetch is disabled because the filesystem (EXT4) is not a recognized network FS (NFS/Lustre) and the checkpoint size (170.23 GiB) exceeds 90% of available RAM (41.25 GiB).
+(EngineCore pid=828501) Loading safetensors checkpoint shards:   0% Completed | 0/21 [00:00<?, ?it/s]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  10% Completed | 2/21 [00:33<05:22, 16.99s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  14% Completed | 3/21 [01:08<07:14, 24.11s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  24% Completed | 5/21 [01:32<04:40, 17.56s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  29% Completed | 6/21 [01:56<04:53, 19.55s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  33% Completed | 7/21 [02:24<05:05, 21.84s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  38% Completed | 8/21 [02:53<05:10, 23.90s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  43% Completed | 9/21 [03:18<04:52, 24.35s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  48% Completed | 10/21 [03:43<04:27, 24.36s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  52% Completed | 11/21 [04:07<04:02, 24.30s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  57% Completed | 12/21 [04:34<03:45, 25.07s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  62% Completed | 13/21 [05:00<03:22, 25.34s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  67% Completed | 14/21 [05:24<02:54, 24.90s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  71% Completed | 15/21 [05:48<02:29, 24.88s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  76% Completed | 16/21 [06:11<02:01, 24.26s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  81% Completed | 17/21 [06:35<01:37, 24.26s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  86% Completed | 18/21 [07:02<01:14, 24.90s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  90% Completed | 19/21 [07:28<00:50, 25.39s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  95% Completed | 20/21 [07:55<00:25, 25.76s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards: 100% Completed | 21/21 [07:56<00:00, 18.30s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards: 100% Completed | 21/21 [07:56<00:00, 22.69s/it]
+(EngineCore pid=828501) 
+(EngineCore pid=828501) INFO 09-08 15:21:18 [default_loader.py:430] Loading weights took 476.89 seconds
+(EngineCore pid=828501) INFO 09-08 15:21:19 [nvfp4.py:613] Using MoEPrepareAndFinalizeNoDPEPModular
+(EngineCore pid=828501) WARNING 09-08 15:21:20 [modelopt.py:1029] Detected ModelOpt NVFP4 checkpoint (quant_algo=NVFP4). Please note that the format is experimental and could change in future.
+(EngineCore pid=828501) INFO 09-08 15:21:20 [kernel.py:369] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'])
+(EngineCore pid=828501) WARNING 09-08 15:21:20 [vllm.py:1924] max_num_scheduled_tokens is set to 2048 based on the speculative decoding settings. This may lead to suboptimal performance. Consider increasing max_num_batched_tokens to accommodate the additional draft token slots, or decrease num_speculative_tokens.
+(EngineCore pid=828501) INFO 09-08 15:21:20 [compilation.py:329] Enabled custom fusions: act_quant
+(EngineCore pid=828501) INFO 09-08 15:21:20 [mtp.py:428] MTP draft vocab pruned: 10010 of 248320 ids (4.03%), keep-set /home/cc2869/research/magpie/magpie-spark-vllm/scripts/flash_next/results/keep_flashnext_p99.pt
+(EngineCore pid=828501) INFO 09-08 15:21:20 [weight_utils.py:863] Filesystem type for checkpoints: EXT4. Checkpoint size: 170.23 GiB. Available RAM: 37.42 GiB.
+(EngineCore pid=828501) INFO 09-08 15:21:20 [weight_utils.py:893] Auto-prefetch is disabled because the filesystem (EXT4) is not a recognized network FS (NFS/Lustre) and the checkpoint size (170.23 GiB) exceeds 90% of available RAM (37.42 GiB).
+(EngineCore pid=828501) Loading safetensors checkpoint shards:   0% Completed | 0/21 [00:00<?, ?it/s]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  10% Completed | 2/21 [00:08<01:18,  4.14s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  14% Completed | 3/21 [00:08<00:44,  2.47s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  24% Completed | 5/21 [00:10<00:27,  1.71s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  29% Completed | 6/21 [00:12<00:27,  1.84s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  33% Completed | 7/21 [00:15<00:27,  2.00s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  38% Completed | 8/21 [00:18<00:30,  2.35s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  43% Completed | 9/21 [00:21<00:32,  2.72s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  48% Completed | 10/21 [00:25<00:31,  2.89s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  52% Completed | 11/21 [00:27<00:26,  2.67s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  57% Completed | 12/21 [00:29<00:22,  2.52s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  62% Completed | 13/21 [00:31<00:19,  2.41s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  67% Completed | 14/21 [00:33<00:16,  2.34s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  71% Completed | 15/21 [00:35<00:13,  2.27s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  76% Completed | 16/21 [00:38<00:11,  2.21s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  81% Completed | 17/21 [00:40<00:09,  2.27s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  86% Completed | 18/21 [00:41<00:05,  1.75s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  90% Completed | 19/21 [00:41<00:02,  1.28s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards:  95% Completed | 20/21 [00:41<00:00,  1.06it/s]
+(EngineCore pid=828501) Loading safetensors checkpoint shards: 100% Completed | 21/21 [00:53<00:00,  4.22s/it]
+(EngineCore pid=828501) Loading safetensors checkpoint shards: 100% Completed | 21/21 [00:53<00:00,  2.53s/it]
+(EngineCore pid=828501) 
+(EngineCore pid=828501) INFO 09-08 15:22:13 [default_loader.py:430] Loading weights took 53.41 seconds
+(EngineCore pid=828501) INFO 09-08 15:22:14 [model_runner.py:404] Model loading took 74.57 GiB memory and 537.180574 seconds
+(EngineCore pid=828501) INFO 09-08 15:22:14 [topk_topp_sampler.py:62] Using FlashInfer for top-p & top-k sampling.
+(EngineCore pid=828501) INFO 09-08 15:22:14 [interface.py:918] Setting attention block size to 1600 tokens to ensure that attention page size is >= mamba page size.
+(EngineCore pid=828501) INFO 09-08 15:22:14 [interface.py:942] Padding mamba page size by 0.25% to ensure that mamba page size and attention page size are exactly equal.
+(EngineCore pid=828501) INFO 09-08 15:22:14 [utils.py:306] Using BLNHC KV cache layout.
+(EngineCore pid=828501) INFO 09-08 15:22:16 [caching.py:343] reconstructed serializable fn from standalone compile artifacts. num_artifacts=18 num_submods=50
+(EngineCore pid=828501) INFO 09-08 15:22:16 [decorators.py:313] Directly load AOT compilation from path /home/cc2869/.cache/vllm/torch_compile_cache/torch_aot_compile/ebe804f881760e819e57850e7d2b6f6b82686f8df8ac91e98f26426ba2e293ad/rank_0_0/model
+(EngineCore pid=828501) INFO 09-08 15:22:16 [monitor.py:53] torch.compile took 0.32 s in total
+(EngineCore pid=828501) INFO 09-08 15:22:18 [monitor.py:81] Initial profiling/warmup run took 1.57 s
+(EngineCore pid=828501) INFO 09-08 15:22:18 [caching.py:343] reconstructed serializable fn from standalone compile artifacts. num_artifacts=2 num_submods=2
+(EngineCore pid=828501) INFO 09-08 15:22:18 [decorators.py:313] Directly load AOT compilation from path /home/cc2869/.cache/vllm/torch_compile_cache/torch_aot_compile/9f2a803031b1472c6c89858826b02fa95427fdbd065914044bc7d82b35722047/rank_0_0/model
+(EngineCore pid=828501) INFO 09-08 15:22:18 [monitor.py:53] torch.compile took 0.05 s in total
+(EngineCore pid=828501) INFO 09-08 15:22:18 [monitor.py:81] Initial profiling/warmup run took 0.00 s
+(EngineCore pid=828501) WARNING 09-08 15:22:18 [kv_cache_utils.py:1893] Speculative decoding (method=mtp) is enabled but no KV cache group could be identified as the draft model's, so every group -- including Mamba groups [0, 1, 2, 3] -- will be treated as a draft group. A Mamba group cannot satisfy the widened lookup window that implies, so prefix-cache reuse across requests will be disabled and any external KV offload tier will store without ever serving a hit.
+(EngineCore pid=828501) INFO 09-08 15:22:18 [speculator.py:120] Fused multi-step draft decode is not supported by attention backend(s) QWEN4_EXP_EXP_QSA_STATE; falling back to rebuilding attention metadata between draft steps.
+(EngineCore pid=828501) Capturing CUDA graphs (PIECEWISE):   0%|          | 0/7 [00:00<?, ?it/s]Capturing CUDA graphs (PIECEWISE):  14%|█▍        | 1/7 [00:00<00:02,  2.25it/s]Capturing CUDA graphs (PIECEWISE):  29%|██▊       | 2/7 [00:00<00:01,  2.66it/s]Capturing CUDA graphs (PIECEWISE):  43%|████▎     | 3/7 [00:01<00:01,  2.94it/s]Capturing CUDA graphs (PIECEWISE):  57%|█████▋    | 4/7 [00:01<00:00,  3.04it/s]Capturing CUDA graphs (PIECEWISE):  71%|███████▏  | 5/7 [00:01<00:00,  3.74it/s]Capturing CUDA graphs (PIECEWISE):  86%|████████▌ | 6/7 [00:01<00:00,  4.36it/s]Capturing CUDA graphs (PIECEWISE): 100%|██████████| 7/7 [00:01<00:00,  4.47it/s]Capturing CUDA graphs (PIECEWISE): 100%|██████████| 7/7 [00:01<00:00,  3.67it/s]
+(EngineCore pid=828501) Capturing CUDA graphs (FULL):   0%|          | 0/2 [00:00<?, ?it/s]Capturing CUDA graphs (FULL):  50%|█████     | 1/2 [00:00<00:00,  9.25it/s]Capturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00, 10.09it/s]
+(EngineCore pid=828501) INFO 09-08 15:22:21 [speculator.py:151] Capturing model for speculator...
+(EngineCore pid=828501) Capturing prefill CUDA graphs (PIECEWISE):   0%|          | 0/7 [00:00<?, ?it/s]Capturing prefill CUDA graphs (PIECEWISE): 100%|██████████| 7/7 [00:00<00:00, 71.70it/s]
+(EngineCore pid=828501) Capturing prefill CUDA graphs (FULL):   0%|          | 0/3 [00:00<?, ?it/s]Capturing prefill CUDA graphs (FULL): 100%|██████████| 3/3 [00:00<00:00, 74.43it/s]
+(EngineCore pid=828501) Capturing decode CUDA graphs (FULL):   0%|          | 0/3 [00:00<?, ?it/s]Capturing decode CUDA graphs (FULL): 100%|██████████| 3/3 [00:00<00:00, 111.47it/s]
+(EngineCore pid=828501) INFO 09-08 15:22:21 [model_runner.py:960] Graph capturing finished in 2 secs, took 0.63 GiB
+(EngineCore pid=828501) INFO 09-08 15:22:21 [gpu_worker.py:622] Available KV cache memory: 14.83 GiB
+(EngineCore pid=828501) INFO 09-08 15:22:21 [gpu_worker.py:637] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.7600 is equivalent to --gpu-memory-utilization=0.7547 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.7653. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(EngineCore pid=828501) WARNING 09-08 15:22:21 [kv_cache_utils.py:1893] Speculative decoding (method=mtp) is enabled but no KV cache group could be identified as the draft model's, so every group -- including Mamba groups [0, 1, 2, 3] -- will be treated as a draft group. A Mamba group cannot satisfy the widened lookup window that implies, so prefix-cache reuse across requests will be disabled and any external KV offload tier will store without ever serving a hit.
+(EngineCore pid=828501) INFO 09-08 15:22:21 [kv_cache_utils.py:2042] GPU KV cache size: 382,645 tokens, Maximum concurrency for 65,536 tokens per request: 5.84x
+(EngineCore pid=828501) INFO 09-08 15:22:25 [kernel_warmup.py:124] JIT kernel warmup starting.
+(EngineCore pid=828501) INFO 09-08 15:22:25 [kernel_warmup.py:134] JIT kernel warmup finished in 0.00s.
+(EngineCore pid=828501) INFO 09-08 15:22:25 [kernel_warmup.py:194] Skipping FlashInfer autotune because it is disabled.
+(EngineCore pid=828501) Capturing CUDA graphs (PIECEWISE):   0%|          | 0/7 [00:00<?, ?it/s]Capturing CUDA graphs (PIECEWISE):  14%|█▍        | 1/7 [00:00<00:01,  3.28it/s]Capturing CUDA graphs (PIECEWISE):  29%|██▊       | 2/7 [00:00<00:01,  3.37it/s]Capturing CUDA graphs (PIECEWISE):  43%|████▎     | 3/7 [00:00<00:01,  3.29it/s]Capturing CUDA graphs (PIECEWISE):  57%|█████▋    | 4/7 [00:01<00:00,  3.37it/s]Capturing CUDA graphs (PIECEWISE):  71%|███████▏  | 5/7 [00:01<00:00,  4.24it/s]Capturing CUDA graphs (PIECEWISE):  86%|████████▌ | 6/7 [00:01<00:00,  4.95it/s]Capturing CUDA graphs (PIECEWISE): 100%|██████████| 7/7 [00:01<00:00,  5.68it/s]Capturing CUDA graphs (PIECEWISE): 100%|██████████| 7/7 [00:01<00:00,  4.43it/s]
+(EngineCore pid=828501) Capturing CUDA graphs (FULL):   0%|          | 0/3 [00:00<?, ?it/s]Capturing CUDA graphs (FULL):  67%|██████▋   | 2/3 [00:00<00:00, 11.21it/s]Capturing CUDA graphs (FULL): 100%|██████████| 3/3 [00:00<00:00, 10.97it/s]
+(EngineCore pid=828501) INFO 09-08 15:22:27 [speculator.py:151] Capturing model for speculator...
+(EngineCore pid=828501) Capturing prefill CUDA graphs (PIECEWISE):   0%|          | 0/7 [00:00<?, ?it/s]Capturing prefill CUDA graphs (PIECEWISE): 100%|██████████| 7/7 [00:00<00:00, 83.01it/s]
+(EngineCore pid=828501) Capturing prefill CUDA graphs (FULL):   0%|          | 0/3 [00:00<?, ?it/s]Capturing prefill CUDA graphs (FULL): 100%|██████████| 3/3 [00:00<00:00, 103.80it/s]
+(EngineCore pid=828501) Capturing decode CUDA graphs (FULL):   0%|          | 0/3 [00:00<?, ?it/s]Capturing decode CUDA graphs (FULL): 100%|██████████| 3/3 [00:00<00:00, 98.51it/s]
+(EngineCore pid=828501) INFO 09-08 15:22:27 [model_runner.py:960] Graph capturing finished in 3 secs, took 0.19 GiB
+(EngineCore pid=828501) INFO 09-08 15:22:27 [gpu_worker.py:794] CUDA graph pool memory: 0.19 GiB (actual), 0.64 GiB (estimated), difference: 0.45 GiB (228.8%).
+(EngineCore pid=828501) INFO 09-08 15:22:27 [gpu_worker.py:857] Free memory on device (115.75/121.69 GiB) on startup. Desired GPU memory utilization is (0.76, 92.48 GiB). Actual usage is 76.68 GiB for consumed memory (weights + non-torch), 0.97 GiB for peak activation, and 0.19 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=15562559878` (14.49 GiB) to fit into requested memory, or `--kv-cache-memory=40539035136` (37.75 GiB) to fully utilize gpu memory. Current kv cache memory in use is 14.83 GiB.
+(EngineCore pid=828501) INFO 09-08 15:22:29 [jit_monitor.py:85] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
+(EngineCore pid=828501) INFO 09-08 15:22:30 [torch_utils.py:277] Reducing Torch threads from 20 to 1 for serving. Set OMP_NUM_THREADS in the external environment to override.
+(EngineCore pid=828501) INFO 09-08 15:22:30 [core.py:361] init engine (profile, create kv cache, warmup model) took 15.75 s (compilation: 0.37 s)
+(EngineCore pid=828501) INFO 09-08 15:22:30 [kernel.py:369] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'])
+(APIServer pid=828354) INFO 09-08 15:22:31 [entry.py:135] Supported tasks: ['generate']
+(APIServer pid=828354) INFO 09-08 15:22:35 [parser_manager.py:36] "auto" tool choice has been enabled.
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) [transformers] Unrecognized keys in `rope_parameters` for 'rope_type'='default': {'mrope_section', 'mrope_interleaved'}
+(APIServer pid=828354) INFO 09-08 15:22:37 [hf.py:547] Detected the chat template content format to be 'openai'. You can set `--chat-template-content-format` to override this.
+(APIServer pid=828354) WARNING 09-08 15:22:37 [model.py:1759] Default vLLM sampling parameters have been overridden by the model's `generation_config.json`: `{'temperature': 1.0, 'top_k': 20, 'top_p': 0.95}`. If this is not intended, please relaunch vLLM instance with `--generation-config vllm`.
+(APIServer pid=828354) INFO 09-08 15:22:37 [entry.py:139] Starting vLLM server on http://0.0.0.0:8100
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:61] Available routes are:
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /openapi.json, Methods: GET, HEAD
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /docs, Methods: GET, HEAD
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /docs/oauth2-redirect, Methods: GET, HEAD
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /redoc, Methods: GET, HEAD
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /load, Methods: GET
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /version, Methods: GET
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /health, Methods: GET
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /metrics, Methods: GET
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /tokenize, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /detokenize, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /v1/models, Methods: GET
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /ping, Methods: GET
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /ping, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /invocations, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /v1/chat/completions, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /v1/chat/completions/batch, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /v1/responses, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /v1/responses/{response_id}, Methods: GET
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /v1/responses/{response_id}/cancel, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /v1/completions, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /v1/messages, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /v1/messages/count_tokens, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /generative_scoring, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /scale_elastic_ep, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /is_scaling_elastic_ep, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /v1/chat/completions/render, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /v1/messages/render, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /v1/completions/render, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /v1/chat/completions/derender, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /v1/completions/derender, Methods: POST
+(APIServer pid=828354) INFO 09-08 15:22:37 [launcher.py:70] Route: /inference/v1/generate, Methods: POST
+(APIServer pid=828354) INFO:     Started server process [828354]
+(APIServer pid=828354) INFO:     Waiting for application startup.
+(APIServer pid=828354) INFO:     Application startup complete.

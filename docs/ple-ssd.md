@@ -136,6 +136,42 @@ the cuBLAS GEMV total falls from 502 ms to 84 ms (the target's own full
 head remains), `stage_rows` is unchanged, and the window is now 58 % BF16
 side-layer GEMMs and 27 % NVFP4 expert GEMMs.
 
+### Worker vs. scheduler, and kernel counts (2026-09-08 captures)
+
+`scripts/flash_next/profile_capture.py` + `trace_split.py` on the best
+configuration (0001 + 0002 + pruned head); `results/profile/trace/<window>/split.txt`.
+Engine-step loop time split by role (the worker span holds the GPU work):
+
+| window | ms/step | worker | scheduler | engine I/O | loop other | GPU busy of wall | worker CPU not overlapped |
+|---|---|---|---|---|---|---|---|
+| decode c=1 (28 steps) | 72.5 | 94.7 % | 1.0 % | 1.5 % | 2.8 % | 89 % | 4.4 ms |
+| decode c=4 (37 steps) | 115 | 96.9 % | 1.0 % | 1.7 % | 0.5 % | 85 % | 13.4 ms |
+| prefill 17k tokens (13 chunks of 2048) | 788 | 99.4 % | 0.1 % | 1.5 % | – | 80 % | 154 ms |
+
+Kernels per engine step: **~2,300 launches** (2,327 at c=1, 2,288 at c=4,
+2,309 per prefill chunk), replayed through ~7 `cudaGraphLaunch` calls per
+decode step; mean kernel 30 µs (c=1), 45 µs (c=4), 274 µs (prefill).
+GPU time by family, ms per step:
+
+| family | decode c=1 | decode c=4 | prefill chunk |
+|---|---|---|---|
+| BF16 GEMM, dense side layers (cutlass wmma / nvjet) | 40.8 (59 %) | 42.7 (42 %) | 138 (22 %) |
+| NVFP4 grouped GEMM, routed experts | 19.8 (29 %) | 44.6 (43 %) | 197 (31 %) |
+| lm_head GEMV | 3.0 (4 %) | 0.7 | 9 |
+| GDN linear attention | 1.7 | 8.7 (8 %) | 62 (10 %) |
+| QSA sparse attention + indexer | 0.5 | 1.1 | 80 (13 %) |
+| HC gated-residual mix / norm | (in elementwise) | – | 75 (12 %) |
+| MoE routing / permute / finalize | 1.4 | 1.8 | 19 |
+| norms / activations / elementwise | 1.2 | 1.8 | 38 |
+| PLE n-gram table (gather + short conv) | 0.1 | 0.3 | 0.3 |
+
+Reading: decode is a weight-streaming problem (side layers + experts =
+88 % of GPU time at c=1, 85 % at c=4); the expert share grows with batch
+because 4 requests touch more distinct experts. Prefill is compute-bound
+on the experts, QSA and the HC mixers, and its non-overlapped worker CPU
+(154 ms per 2048-token chunk) is the chunked-prefill Python path plus the
+cold n-gram gather. Scheduler and engine I/O stay under 3 % everywhere.
+
 The SSD table is not on the critical path; the checkpoint's BF16 side
 layers are (the reference recipe's "hybrid" FP8 conversion of those is
 the next lever after pruning).

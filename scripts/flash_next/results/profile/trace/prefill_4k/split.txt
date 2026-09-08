@@ -1,0 +1,21 @@
+== prefill_4k: 13 engine steps, 10245 ms of step loop
+role                               ms      %  ms/step
+worker (execute+sample+output)  10179.7   99.4   783.06
+scheduler                        14.0    0.1     1.07
+engine I/O (zmq, input queue)    150.8    1.5    11.60
+other loop overhead             -99.8   -1.0    -7.68
+
+inside the worker span: GPU busy 8183 ms (80% of worker, 80% of wall); worker CPU not covered by GPU work 1996 ms (153.6 ms/step)
+kernels: 30011 launches (2309 per step), 8215 ms summed (632.0 ms/step), mean 273.7 us each; cudaGraphLaunch calls: 72 (5.5 per step)
+kernel family                                   count       ms   %GPU  ms/step
+NVFP4 MoE grouped GEMM (routed experts)          3060     2563   31.2    197.2
+BF16 GEMM (dense side layers)                    5548     1801   21.9    138.5
+QSA sparse attention + indexer                   1165     1043   12.7     80.3
+HC gated-residual mix / norm                     3140      974   11.9     74.9
+GDN linear attention                             2520      809    9.8     62.2
+norms / activations / elementwise                9184      488    5.9     37.5
+MoE routing / permute / finalize                 2550      249    3.0     19.1
+GEMV (lm_head)                                    690      116    1.4      8.9
+other                                             679       89    1.1      6.8
+memcpy / memset                                  1114       79    1.0      6.1
+PLE n-gram / embeddings / short conv              361        4    0.1      0.3
