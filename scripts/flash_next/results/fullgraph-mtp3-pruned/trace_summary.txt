@@ -1,0 +1,13 @@
+window 2038 ms, GPU busy 1934 ms (95%), cudaGraphLaunch x204
+  ple_layer.py(517): stage_rows                                             192.0 ms
+  ple_layer.py(485): gather_rows                                            175.0 ms
+  cpu 'unique' ops 148.1 ms, 'index_select' 244.3 ms, 'Memcpy HtoD' 0.5 ms
+  top GPU kernels:
+       872.2 ms  void cutlass::Kernel2<cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x2_tn_align8
+       527.7 ms  _ZN7cutlass13device_kernelINS_4gemm6kernel13GemmUniversalINS1_17GroupProblemShapeIN4cute5t
+       258.3 ms  void cutlass::Kernel2<cutlass_80_wmma_tensorop_bf16_s161616gemm_bf16_16x16_128x1_tn_align8
+        47.9 ms  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv
+        36.2 ms  std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv
+        35.3 ms  void (anonymous namespace)::gdn_decode_post_conv_mtp_kernel<float, 3, true>(__nv_bfloat16 
+        12.3 ms  void tensorrt_llm::kernels::cutlass_kernels::finalizeMoeRoutingKernel<__nv_bfloat16, __nv_
+        10.0 ms  void tensorrt_llm::kernels::cutlass_kernels::expandInputRowsKernel<__nv_fp4_e2m1, __nv_fp4

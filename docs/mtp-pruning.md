@@ -128,6 +128,41 @@ natively (`conversations`/`from: gpt`), so recalibrating is: count the new
 corpus, then `np.union1d` the keep-sets — a ~50k-id union covers 99%+ of
 both at a still-5× head shrink.
 
+## Qwen3.8-Flash-Next (Qwen4Exp MTP)
+
+The same `draft_vocab_path` field drives the `Qwen4ExpMTP` drafter
+(`vllm/models/qwen4_exp/nvidia/mtp.py`); the keep-set loading and logits
+scatter now live in `vllm/model_executor/models/draft_vocab.py`, shared with
+the Qwen3.5 drafters. Flash-Next's draft head is the full 248,320 × 2560
+BF16 `lm_head` (1.2 GB) read once per draft step, k=3 → three reads per
+decode step on a 273 GB/s part.
+
+Keep-set for this box: `scripts/flash_next/build_keepset.sh RESULT_DIR OUT.pt`
+counts the model's own generations (the JSON outputs of `bench_decode.py`
+and `gsm8k_eval.py`), builds the 99 % keep-set and unions it with the
+Qwen3.8-27B agent keep-set — the two models share the tokenizer
+(`vocab.json` md5-identical). Fitted on 224 generations / 87k tokens:
+4,173 ids for 99 %; union with the 7,696-id agent set = **10,010 ids
+(4.0 % of vocab, head 1212 MB → 49 MB)**. The corpus is small (see
+"Picking coverage" above); recount on real agent traffic before shipping.
+
+Measured (GB10, ple-ssd 0001+0002, MTP k=3, 512-token answers to 16
+coding/agent prompts, greedy, thinking off; `scripts/flash_next/results/`):
+
+| | Full draft head | Pruned (10,010 ids) |
+|---|---|---|
+| Decode tok/s per request, c=1 | 34.1 | **41.8 (1.23×)** |
+| Decode tok/s per request / aggregate, c=4 | 22.0 / 82.8 | 23.2 / 86.5 (1.05×) |
+| TTFT median, c=1 | 0.36 s | 0.31 s |
+| Acceptance length, c=1 / c=4 | 3.10 / 3.24 | 2.98 / 3.02 (−4 to −7 %) |
+| GSM8K (200, thinking off) | 97.0 % | 97.0 % |
+
+The c=1 gain is larger than on the 27B because Flash-Next's draft is
+tiny (one layer, 10 of 512 experts) and the 1.2 GB head read was ~22 % of
+every decode step (profiler, `docs/ple-ssd.md`). The acceptance cost is
+higher than the 27B's −1 % because this keep-set was fitted on 87k tokens;
+a larger in-distribution count should recover it.
+
 ## Limitations
 
 - Qwen3.5 MTP architectures only (`Qwen3_5MTP`, `Qwen3_5MoeMTP`); the

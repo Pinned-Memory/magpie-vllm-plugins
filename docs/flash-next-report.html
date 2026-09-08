@@ -1,0 +1,220 @@
+<title>Flash-Next on One Spark</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #f3f5f7;
+    --surface: #ffffff;
+    --ink: #16212b;
+    --ink-2: #4b5a68;
+    --ink-3: #7a8793;
+    --line: #d3dae1;
+    --accent: #1f5fa8;
+    --accent-soft: #e4eef9;
+    --s1: #2a78d6;
+    --s2: #eb6834;
+    --s3: #1baf7a;
+    --s4: #eda100;
+    --good: #0d7c3a;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --body: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #121619; --surface: #1a2025; --ink: #e6ebef; --ink-2: #a9b4bd; --ink-3: #7d8a95;
+      --line: #2c353d; --accent: #5b9bea; --accent-soft: #1d2b3d;
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --good: #3fbf6b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #121619; --surface: #1a2025; --ink: #e6ebef; --ink-2: #a9b4bd; --ink-3: #7d8a95;
+    --line: #2c353d; --accent: #5b9bea; --accent-soft: #1d2b3d;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --good: #3fbf6b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+  main { max-width: 76ch; margin: 0 auto; padding: 48px 24px 80px; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 600; line-height: 1.15; text-wrap: balance; margin: 0; }
+  h1 { font-size: 2.4rem; letter-spacing: -0.01em; }
+  h2 { font-size: 1.45rem; margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); }
+  h3 { font-size: 1.05rem; font-family: var(--body); font-weight: 600; margin-top: 28px; }
+  p { margin: 12px 0 0; max-width: 68ch; }
+  .eyebrow { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px; }
+  .lede { font-size: 1.12rem; color: var(--ink-2); margin-top: 14px; max-width: 64ch; }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 32px; }
+  .tile { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px; }
+  .tile .k { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+  .tile .v { font-family: var(--display); font-size: 2.1rem; font-weight: 500; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .tile .v small { font-family: var(--body); font-size: 0.95rem; color: var(--ink-2); margin-left: 4px; }
+  .tile .d { color: var(--ink-2); font-size: 0.86rem; margin-top: 4px; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; margin-top: 16px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+  td.n, th.n { text-align: right; }
+  td.best { color: var(--accent); font-weight: 600; }
+  .wide { overflow-x: auto; }
+  figure { margin: 20px 0 0; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px 12px; }
+  figcaption { font-size: 0.86rem; color: var(--ink-2); margin-top: 8px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { font-family: var(--body); font-size: 12px; fill: var(--ink-2); }
+  svg text.v { font-family: var(--mono); fill: var(--ink); font-weight: 500; }
+  svg text.lab { fill: var(--ink); }
+  svg .grid { stroke: var(--line); stroke-width: 1; }
+  svg .axis { stroke: var(--ink-3); stroke-width: 1; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.84rem; color: var(--ink-2); margin-top: 8px; }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: var(--sw); }
+  ul { padding-left: 20px; margin: 10px 0 0; max-width: 68ch; }
+  li { margin-top: 6px; }
+  li::marker { color: var(--ink-3); }
+  code { font-family: var(--mono); font-size: 0.86em; background: var(--accent-soft); color: var(--ink); padding: 1px 5px; border-radius: 3px; }
+  pre { font-family: var(--mono); font-size: 0.82rem; line-height: 1.5; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; overflow-x: auto; margin: 14px 0 0; }
+  pre code { background: none; padding: 0; }
+  .ledger { display: grid; grid-template-columns: 9ch 1fr; gap: 6px 14px; align-items: center; margin-top: 16px; font-size: 0.9rem; }
+  .ledger .bar { height: 22px; display: flex; border-radius: 4px; overflow: hidden; background: var(--line); }
+  .ledger .seg { height: 100%; }
+  .ledger .lab { font-family: var(--mono); font-size: 0.78rem; color: var(--ink-3); text-align: right; }
+  .note { font-size: 0.86rem; color: var(--ink-2); margin-top: 10px; }
+  .pill { display: inline-block; font-family: var(--mono); font-size: 0.72rem; padding: 1px 7px; border-radius: 10px; border: 1px solid var(--line); color: var(--ink-2); margin-left: 6px; vertical-align: 2px; }
+  .kv { display: grid; grid-template-columns: 22ch 1fr; gap: 8px 16px; margin-top: 14px; font-size: 0.92rem; }
+  .kv dt { color: var(--ink-3); font-family: var(--mono); font-size: 0.78rem; padding-top: 3px; }
+  .kv dd { margin: 0; }
+  @media (max-width: 640px) { .tiles { grid-template-columns: 1fr; } .kv { grid-template-columns: 1fr; } h1 { font-size: 1.9rem; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+<main>
+  <div class="eyebrow">magpie-spark-vllm · GB10 · 2026-09-03</div>
+  <h1>Flash-Next on One Spark</h1>
+  <p class="lede">Qwen3.8-Flash-Next-NVFP4 (125B MoE + 51B n-gram memory + 4B MTP) serving from a single DGX Spark, with the 102 GB n-gram table parked on the SSD instead of in the 121 GB unified pool. Three patches over vLLM, all inert unless activated.</p>
+
+  <div class="tiles">
+    <div class="tile"><div class="k">Decode, one request</div><div class="v">41.8<small>tok/s</small></div><div class="d">MTP k=3, pruned draft head, full CUDA graphs</div></div>
+    <div class="tile"><div class="k">Aggregate, 4 requests</div><div class="v">86.5<small>tok/s</small></div><div class="d">23.2 tok/s per request</div></div>
+    <div class="tile"><div class="k">GSM8K, 200 questions</div><div class="v">97.0<small>%</small></div><div class="d">zero-shot, thinking off, greedy</div></div>
+  </div>
+
+  <h2>Where the memory went</h2>
+  <p>The checkpoint is 171 GB on disk. Everything but the n-gram table is resident; the table is read through the page cache, 16 rows of 320 bytes per token.</p>
+  <div class="ledger">
+    <div class="lab">on disk</div>
+    <div class="bar" title="171 GB checkpoint"><div class="seg" style="width:60%;background:var(--s2)" title="n-gram table 102 GB"></div><div class="seg" style="width:40%;background:var(--s1)" title="experts, side layers, MTP 69 GB"></div></div>
+    <div class="lab">resident</div>
+    <div class="bar" title="121 GB unified memory"><div class="seg" style="width:62%;background:var(--s1)" title="weights 74.5 GiB"></div><div class="seg" style="width:13%;background:var(--s3)" title="KV cache 15.25 GiB (397k tokens)"></div><div class="seg" style="width:6%;background:var(--s4)" title="runtime, CUDA context, API server"></div><div class="seg" style="width:19%;background:var(--line)" title="page cache for hot n-gram rows + OS, ~23 GB"></div></div>
+  </div>
+  <div class="legend"><span style="--sw:var(--s2)">n-gram table, 102 GB, stays on SSD</span><span style="--sw:var(--s1)">weights on device, 74.5 GiB</span><span style="--sw:var(--s3)">KV cache, 15.25 GiB = 397k tokens</span><span style="--sw:var(--s4)">runtime</span><span style="--sw:var(--line)">page cache + OS, ~23 GB</span></div>
+  <p class="note">Launch is deliberately conservative after the box rebooted on an earlier 0.80-utilization attempt: 0.76 utilization, 4 sequences, 64k context, text tower only, and a guard that kills the server under 6 GB available. It never dropped below 22 GB across all runs.</p>
+
+  <h2>Decode throughput by configuration</h2>
+  <p>512-token answers to 16 coding and agent prompts, greedy, thinking off, no <code>ignore_eos</code>. Per-request decode rate comes from streaming timestamps; MTP acceptance from the server's <code>/metrics</code> counters over the run.</p>
+  <figure>
+    <svg viewBox="0 0 640 214" role="img" aria-label="Decode tokens per second at one request, four configurations">
+      <line class="grid" x1="170" x2="600" y1="30" y2="30"/><line class="grid" x1="170" x2="600" y1="76" y2="76"/><line class="grid" x1="170" x2="600" y1="122" y2="122"/><line class="grid" x1="170" x2="600" y1="168" y2="168"/>
+      <g>
+        <text class="lab" x="160" y="52" text-anchor="end">MTP off (baseline)</text>
+        <rect x="170" y="38" width="144" height="26" rx="0" fill="var(--s4)" style="clip-path: inset(0 0 0 0 round 0 4px 4px 0)"><title>MTP off: 16.9 tok/s</title></rect>
+        <text class="v" x="321" y="56">16.9</text>
+      </g>
+      <g>
+        <text class="lab" x="160" y="98" text-anchor="end">MTP k=3, piecewise graphs</text>
+        <rect x="170" y="84" width="279" height="26" fill="var(--s1)" style="clip-path: inset(0 0 0 0 round 0 4px 4px 0)"><title>patch 0001 only: 32.8 tok/s, acceptance 3.09</title></rect>
+        <text class="v" x="456" y="102">32.8</text>
+      </g>
+      <g>
+        <text class="lab" x="160" y="144" text-anchor="end">+ full CUDA graphs</text>
+        <rect x="170" y="130" width="290" height="26" fill="var(--s1)" style="clip-path: inset(0 0 0 0 round 0 4px 4px 0)"><title>patch 0002: 34.1 tok/s, acceptance 3.10</title></rect>
+        <text class="v" x="467" y="148">34.1</text>
+      </g>
+      <g>
+        <text class="lab" x="160" y="190" text-anchor="end">+ pruned draft head</text>
+        <rect x="170" y="176" width="355" height="26" fill="var(--s2)" style="clip-path: inset(0 0 0 0 round 0 4px 4px 0)"><title>mtp-pruning, 10,010-id keep-set: 41.8 tok/s, acceptance 2.98</title></rect>
+        <text class="v" x="532" y="194">41.8</text>
+      </g>
+      <line class="axis" x1="170" x2="170" y1="30" y2="208"/>
+      <text x="170" y="22">0</text><text x="255" y="22">10</text><text x="340" y="22">20</text><text x="425" y="22">30</text><text x="510" y="22">40</text><text x="595" y="22" text-anchor="end">50 tok/s</text>
+    </svg>
+    <figcaption>Decode tok/s for one request (c=1). Scale: 8.5 px per tok/s. The pruned head removes three 1.2 GB <code>lm_head</code> reads per step.</figcaption>
+  </figure>
+
+  <div class="wide">
+  <table>
+    <thead><tr><th>Run</th><th>Patches</th><th class="n">c=1 tok/s</th><th class="n">c=1 TTFT</th><th class="n">c=1 accept.</th><th class="n">c=4 per req</th><th class="n">c=4 aggregate</th><th class="n">GSM8K</th></tr></thead>
+    <tbody>
+      <tr><td>fullgraph-mtp0</td><td>ple-ssd 0001+0002, MTP off</td><td class="n">16.9</td><td class="n">0.24 s</td><td class="n">–</td><td class="n">13.5</td><td class="n">52.6</td><td class="n">97.0 % (n=100)</td></tr>
+      <tr><td>mtp3</td><td>ple-ssd 0001, MTP k=3</td><td class="n">32.8</td><td class="n">0.39 s</td><td class="n">3.09</td><td class="n">20.9</td><td class="n">77.7</td><td class="n">96.5 %</td></tr>
+      <tr><td>fullgraph-mtp3</td><td>+ ple-ssd 0002</td><td class="n">34.1</td><td class="n">0.36 s</td><td class="n">3.10</td><td class="n">22.0</td><td class="n">82.8</td><td class="n">97.0 %</td></tr>
+      <tr><td>fullgraph-mtp3-pruned</td><td>+ mtp-pruning</td><td class="n best">41.8</td><td class="n best">0.31 s</td><td class="n">2.98</td><td class="n best">23.2</td><td class="n best">86.5</td><td class="n">97.0 %</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note">GSM8K: openai/gsm8k test split, first 200 questions, zero-shot "#### answer" instruction, thinking off, 1024-token cap (2–4 answers truncated per run). Greedy outputs of the pruned and unpruned full-graph runs were byte-identical on the coherence prompts, as pruning is lossless by construction: the target still verifies with its full head.</p>
+
+  <h2>Where a decode step goes</h2>
+  <p>Torch profiler over one c=1 request of 64 tokens (about 21 MTP steps), GPU 95 % busy in both cases. The SSD gather is not on the critical path.</p>
+  <figure>
+    <svg viewBox="0 0 640 118" role="img" aria-label="Share of GPU time per decode step, before and after pruning">
+      <text class="lab" x="0" y="30">full draft head</text>
+      <rect x="150" y="16" width="198" height="22" fill="var(--s1)"><title>BF16 side-layer GEMMs 44 %</title></rect>
+      <rect x="350" y="16" width="97" height="22" fill="var(--s2)"><title>lm_head GEMV (target + 3 draft steps) 22 %</title></rect>
+      <rect x="449" y="16" width="93" height="22" fill="var(--s3)"><title>NVFP4 routed experts 21 %</title></rect>
+      <rect x="544" y="16" width="56" height="22" fill="var(--line)"><title>GDN decode, MoE routing, other 13 %</title></rect>
+      <text class="v" x="154" y="31" style="fill:#fff">44 %</text><text class="v" x="354" y="31" style="fill:#fff">22 %</text><text class="v" x="453" y="31" style="fill:#fff">21 %</text>
+      <text class="lab" x="0" y="76">pruned draft head</text>
+      <rect x="150" y="62" width="261" height="22" fill="var(--s1)"><title>BF16 side-layer GEMMs 58 %</title></rect>
+      <rect x="413" y="62" width="19" height="22" fill="var(--s2)"><title>lm_head GEMV (target only) 4 %</title></rect>
+      <rect x="434" y="62" width="121" height="22" fill="var(--s3)"><title>NVFP4 routed experts 27 %</title></rect>
+      <rect x="557" y="62" width="43" height="22" fill="var(--line)"><title>GDN decode, MoE routing, other 11 %</title></rect>
+      <text class="v" x="154" y="77" style="fill:#fff">58 %</text><text class="v" x="438" y="77" style="fill:#fff">27 %</text>
+      <text x="150" y="108">0</text><text x="600" y="108" text-anchor="end">100 % of GPU time</text>
+    </svg>
+    <div class="legend"><span style="--sw:var(--s1)">BF16 side layers (GDN/QSA projections, shared experts, HC)</span><span style="--sw:var(--s2)">lm_head GEMV</span><span style="--sw:var(--s3)">NVFP4 routed experts</span><span style="--sw:var(--line)">other</span></div>
+    <figcaption>cuBLAS GEMV time fell from 502 ms to 84 ms in the window; what remains is dominated by the checkpoint's BF16 side layers, which an FP8 "hybrid" conversion would halve.</figcaption>
+  </figure>
+  <dl class="kv">
+    <dt>SSD gather per step</dt><dd>0.7–1 ms wall in the profile (16 threads); the rest of the staging time is the host waiting for the previous step. Cold NVMe microbench: 64 rows 3.7 ms, 20k rows 33 ms.</dd>
+    <dt>Host to device</dt><dd>0.3–0.5 ms total per window: rows are deduplicated on the GPU and only unique rows cross.</dd>
+    <dt>Graph launches</dt><dd>About 200 per window with full graphs; target decode, draft prefill and draft decode all replay captured graphs.</dd>
+  </dl>
+
+  <h2>How it works</h2>
+  <ul>
+    <li><strong>No copy, no new I/O path.</strong> vLLM's default safetensors loader already opens the checkpoint with <code>mmap</code> and hands each of the 128 n-gram shards over as a zero-copy CPU view. Patch 0001 keeps those views instead of copying them into a 102 GB device parameter, and calls <code>madvise(MADV_RANDOM)</code> on each so a miss reads one 4 KiB page instead of the kernel's 128 KiB readahead.</li>
+    <li><strong>Gather.</strong> Hash the n-gram ids on the GPU (stock code), <code>torch.unique</code>, one copy of the unique ids to the host, sorted ids split by shard run across 16 threads (page faults overlap on the NVMe), rows land in a pinned buffer, one async copy back up, inverse index expands on the GPU.</li>
+    <li><strong>Full CUDA graphs (patch 0002).</strong> The runner's model-state input prep, called immediately before the forward, stages the step's rows into a static device buffer; the forward only reads a slice of it. That removes the custom op, the graph-splitting entry and the PIECEWISE forcing, so target decode and the MTP draft's decode steps replay full graphs.</li>
+    <li><strong>MTP pruning (mtp-pruning patch).</strong> <code>draft_vocab_path</code> in <code>--speculative-config</code> gives the Qwen4Exp drafter a 10,010-row slice of the target head (49 MB instead of 1.2 GB) and scatters its logits back to full-vocab positions. The keep-set was fitted on this model's own generations (87k tokens) and unioned with the Qwen3.8-27B agent set; the tokenizers are identical.</li>
+    <li><strong>Activation</strong> is a vLLM argument on the HF config namespace, next to the PLE layout attributes the layer already reads: <code>--hf-overrides '{"ple_mmap": true}'</code>. Unset, every patched file behaves stock.</li>
+  </ul>
+
+  <h2>Run it</h2>
+<pre><code># vLLM checkout at 33898f832c (v0.29.0rc1); patches apply alone or stacked
+git -C /path/to/vllm apply patches/ple-ssd/0001-qwen4-exp-ple-table-on-ssd.patch
+git -C /path/to/vllm apply patches/ple-ssd/0002-stage-rows-before-forward-full-cudagraphs.patch
+git -C /path/to/vllm apply patches/mtp-pruning/0001-mtp-draft-vocab-pruning.patch
+
+# serve (memory-conservative GB10 defaults; MTP=0 disables speculation)
+DRAFT_VOCAB_PATH=$PWD/scripts/flash_next/results/keep_flashnext_p99.pt \
+GPU_MEM=0.76 MAX_NUM_SEQS=4 scripts/flash_next/serve.sh server.log --language-model-only
+
+# measure
+python scripts/flash_next/bench_decode.py --concurrency 1 --num-prompts 8 --out bench_c1.json
+python scripts/flash_next/gsm8k_eval.py -n 200 --out gsm8k.json
+scripts/flash_next/profile_decode.sh &amp;&amp; scripts/flash_next/trace_summary.py results/&lt;run&gt;/trace/*.gz</code></pre>
+  <p class="note">First launch JIT-builds FlashInfer's sm_120 fused-MoE kernel (about 5 minutes, needs <code>ninja</code> and <code>nvcc</code> on PATH; the serve script exports both). Weight loading takes about 10 minutes per launch.</p>
+
+  <h2>What was delivered</h2>
+  <dl class="kv">
+    <dt>patches/ple-ssd/0001</dt><dd>n-gram table parked on SSD, custom-op gather, PIECEWISE graphs. 3 files, 278 lines.</dd>
+    <dt>patches/ple-ssd/0002</dt><dd>rows staged before the forward, full CUDA graphs. 4 files, 177 lines. Recommended.</dd>
+    <dt>patches/mtp-pruning/0001</dt><dd>rebased for this vLLM and extended to <code>Qwen4ExpMTP</code>; shared <code>draft_vocab.py</code> helper.</dd>
+    <dt>scripts/flash_next/</dt><dd>serve, decode bench, GSM8K, keep-set fit, profiler capture and summary, memory guard, CPU unit test of the gather.</dd>
+    <dt>docs/</dt><dd><code>ple-ssd.md</code> (mechanism, measurements, profile, limits) and the Flash-Next section of <code>mtp-pruning.md</code>.</dd>
+    <dt>results/</dt><dd>per-run server logs, bench and GSM8K JSON with every generation, profiler summaries, the fitted keep-set.</dd>
+  </dl>
+
+  <h2>Limits and next levers</h2>
+  <ul>
+    <li>BF16 and FP16 tables only; the official FP8 checkpoint's global table scale is not carried through the mmap path yet.</li>
+    <li>The keep-set is fitted on a small corpus (87k tokens); acceptance dropped 4–7 % versus the full head where the 27B saw 1 %. Recount on real agent traffic before shipping it.</li>
+    <li>Cold rows cost an NVMe read; a first pass over new text is slower than the second. An FP8 copy of the table on disk would double the page-cache hit rate for the same memory.</li>
+    <li>The profile says the next real lever is the checkpoint's BF16 side layers (58 % of a pruned step): converting them to blockwise FP8, as the reference recipe's "hybrid" mode does, is the obvious follow-up.</li>
+    <li>Per-launch weight loading is about 10 minutes at 150–200 MB/s; it is CPU-bound in the NVFP4 expert loader, not disk-bound.</li>
+  </ul>
+</main>

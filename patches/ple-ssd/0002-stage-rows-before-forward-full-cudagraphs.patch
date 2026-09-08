@@ -1,0 +1,177 @@
+diff --git a/vllm/config/compilation.py b/vllm/config/compilation.py
+index 283da6c2bf..9989c4d2a0 100644
+--- a/vllm/config/compilation.py
++++ b/vllm/config/compilation.py
+@@ -769,7 +769,6 @@ class CompilationConfig:
+         "vllm::mamba_mixer",
+         "vllm::short_conv",
+         "vllm::qwen4_exp_compute_ple_ngram_ids",
+-        "vllm::qwen4_exp_ple_mmap_lookup",
+         "vllm::qwen4_exp_ple_short_conv",
+         "vllm::qwen4_exp_qsa_with_output",
+         "vllm::linear_attention",
+diff --git a/vllm/model_executor/models/config.py b/vllm/model_executor/models/config.py
+index 5210ed8b1b..263c8a4035 100644
+--- a/vllm/model_executor/models/config.py
++++ b/vllm/model_executor/models/config.py
+@@ -885,12 +885,6 @@ class Qwen4ExpForConditionalGenerationConfig(Qwen3_5ForConditionalGenerationConf
+         multimodal_config = vllm_config.model_config.multimodal_config
+         if multimodal_config is not None and multimodal_config.language_model_only:
+             _strip_qwen4_exp_mrope(vllm_config.model_config)
+-        if getattr(vllm_config.model_config.hf_config, "ple_mmap", False):
+-            from vllm.config.compilation import CUDAGraphMode
+-
+-            # The on-disk n-gram gather is host work that cannot be captured
+-            # into a full CUDA graph; it runs between piecewise graphs.
+-            vllm_config.compilation_config.cudagraph_mode = CUDAGraphMode.PIECEWISE
+         spec_config = vllm_config.speculative_config
+         if spec_config is not None and spec_config.method not in {
+             "mtp",
+diff --git a/vllm/models/qwen4_exp/nvidia/model_state.py b/vllm/models/qwen4_exp/nvidia/model_state.py
+index ec2a0fef8b..7b81941f47 100644
+--- a/vllm/models/qwen4_exp/nvidia/model_state.py
++++ b/vllm/models/qwen4_exp/nvidia/model_state.py
+@@ -13,6 +13,8 @@ from vllm.v1.worker.gpu.mm.encoder_cache import EncoderCache
+ from vllm.v1.worker.gpu.model_states.mamba_hybrid import MambaHybridModelState
+ from vllm.v1.worker.gpu.states import RequestState
+ 
++from .ple_layer import Qwen4ExpNGramEmbedding
++
+ 
+ class Qwen4ExpModelState(MambaHybridModelState):
+     """Add rollback-safe PLE n-gram context to the model inputs."""
+@@ -43,6 +45,13 @@ class Qwen4ExpModelState(MambaHybridModelState):
+         self.ngram_context_len = int(config.ngram_size) - 1
+         if self.ngram_context_len <= 0:
+             raise ValueError("N-gram embedding requires context length >= 1.")
++        # Tables parked on SSD (ple_mmap) are gathered here, before the
++        # forward, into each embedding's static device buffer.
++        self.mmap_ngram_embeddings = [
++            module
++            for module in model.modules()
++            if isinstance(module, Qwen4ExpNGramEmbedding) and module.shards is not None
++        ]
+         self.ngram_eos_token_id = int(config.eos_token_id)
+         self.ngram_context = torch.full(
+             (self.max_num_reqs, self.ngram_context_len),
+@@ -103,9 +112,14 @@ class Qwen4ExpModelState(MambaHybridModelState):
+         num_reqs_padded = input_batch.num_reqs_after_padding
+         query_start_loc = self.ple_query_start_loc[: num_reqs_padded + 1]
+         query_start_loc.copy_(input_batch.query_start_loc[: num_reqs_padded + 1])
++        ngram_context = self._prepare_ngram_context(input_batch, req_states)
++        if input_batch.num_reqs > 0:
++            input_ids = input_batch.input_ids[: input_batch.num_tokens_after_padding]
++            for embedding in self.mmap_ngram_embeddings:
++                embedding.stage_rows(input_ids, query_start_loc, ngram_context)
+         model_inputs.update(
+             query_start_loc=query_start_loc,
+-            ngram_context=self._prepare_ngram_context(input_batch, req_states),
++            ngram_context=ngram_context,
+         )
+         return model_inputs
+ 
+diff --git a/vllm/models/qwen4_exp/nvidia/ple_layer.py b/vllm/models/qwen4_exp/nvidia/ple_layer.py
+index 70010d7f40..cede18e212 100644
+--- a/vllm/models/qwen4_exp/nvidia/ple_layer.py
++++ b/vllm/models/qwen4_exp/nvidia/ple_layer.py
+@@ -347,6 +347,14 @@ class Qwen4ExpNGramEmbedding(nn.Module):
+                 device="cpu",
+                 pin_memory=True,
+             )
++            # Static device buffer the forward reads; ``stage_rows`` fills it
++            # from the model runner before each forward, so the forward
++            # itself has no host work and is CUDA-graph capturable.
++            self.register_buffer(
++                "device_rows",
++                torch.empty((max_total_tokens, embedding_dim), dtype=params_dtype),
++                persistent=False,
++            )
+         else:
+             self.ngram_embedding = PLEVocabParallelEmbedding(
+                 padded_vocab_size,
+@@ -506,6 +514,19 @@ class Qwen4ExpNGramEmbedding(nn.Module):
+             pass
+         return rows.to(ngram_ids.device, non_blocking=True)[inverse]
+ 
++    def stage_rows(
++        self,
++        input_ids: torch.Tensor,
++        query_start_loc: torch.Tensor,
++        ngram_context: torch.Tensor,
++    ) -> None:
++        """Gather this forward's rows into ``device_rows`` (called by the
++        model runner right before the forward)."""
++        ngram_ids = self.compute_ngram_ids(input_ids, query_start_loc, ngram_context)
++        self.device_rows[: ngram_ids.shape[0]].copy_(
++            self.gather_rows(ngram_ids).flatten(-2)
++        )
++
+     def forward(
+         self,
+         input_ids: torch.Tensor,
+@@ -513,19 +534,7 @@ class Qwen4ExpNGramEmbedding(nn.Module):
+         ngram_context: torch.Tensor,
+     ) -> torch.Tensor:
+         if self.shards is not None:
+-            output = input_ids.new_empty(
+-                (input_ids.shape[0], self.embedding_dim), dtype=self.staging.dtype
+-            )
+-            # Hashing, the disk gather and the H2D copy are host work: keep
+-            # them outside CUDA graphs (splitting op, PIECEWISE mode).
+-            torch.ops.vllm.qwen4_exp_ple_mmap_lookup(
+-                input_ids,
+-                query_start_loc,
+-                ngram_context,
+-                output,
+-                self.layer_name,
+-            )
+-            return output
++            return self.device_rows[: input_ids.shape[0]]
+         ngram_ids = input_ids.new_empty(
+             (input_ids.shape[0], self.ngram_heads),
+             dtype=torch.long,
+@@ -1305,29 +1314,6 @@ def qwen4_exp_compute_ple_ngram_ids_fake(
+     return
+ 
+ 
+-def qwen4_exp_ple_mmap_lookup(
+-    input_ids: torch.Tensor,
+-    query_start_loc: torch.Tensor,
+-    ngram_context: torch.Tensor,
+-    output: torch.Tensor,
+-    layer_name: str,
+-) -> None:
+-    """Hash n-gram ids and gather their rows from the mmapped table."""
+-    embedding = get_forward_context().no_compile_layers[layer_name].ple_embedding
+-    ngram_ids = embedding.compute_ngram_ids(input_ids, query_start_loc, ngram_context)
+-    output.copy_(embedding.gather_rows(ngram_ids).flatten(-2))
+-
+-
+-def qwen4_exp_ple_mmap_lookup_fake(
+-    input_ids: torch.Tensor,
+-    query_start_loc: torch.Tensor,
+-    ngram_context: torch.Tensor,
+-    output: torch.Tensor,
+-    layer_name: str,
+-) -> None:
+-    return
+-
+-
+ def qwen4_exp_ple_short_conv(
+     inputs: torch.Tensor,
+     output: torch.Tensor,
+@@ -1354,14 +1340,6 @@ direct_register_custom_op(
+ )
+ 
+ 
+-direct_register_custom_op(
+-    op_name="qwen4_exp_ple_mmap_lookup",
+-    op_func=qwen4_exp_ple_mmap_lookup,
+-    mutates_args=["output"],
+-    fake_impl=qwen4_exp_ple_mmap_lookup_fake,
+-)
+-
+-
+ direct_register_custom_op(
+     op_name="qwen4_exp_ple_short_conv",
+     op_func=qwen4_exp_ple_short_conv,

@@ -11,7 +11,8 @@ arguments. Unactivated, every patched file behaves stock.
 
 | Optimization | What it does | Measured gain | Docs |
 |---|---|---|---|
-| **mtp-pruning** | Prunes the Qwen3.5 MTP draft vocabulary to a frequency keep-set, slicing the 2.5 GB shared draft `lm_head` to a few % of its rows. Lossless output. | draft-head 45 → ~1 ms/step; decode 1.28–1.35× at c=1–8; acceptance −1% | [docs/mtp-pruning.md](docs/mtp-pruning.md) |
+| **ple-ssd** | Parks Qwen3.8-Flash-Next's 102 GB n-gram (PLE) embedding table on the SSD: the loader's zero-copy mmap shard views are kept and rows are gathered on demand through the page cache. Makes the 176B model fit one GB10. | Model runs on one GB10 at 97 GB resident; MTP off 16.9 tok/s; MTP k=3 decode 32.8 → 34.1 (0002, full CUDA graphs) → 41.8 tok/s (+ mtp-pruning) at c=1, 77.7 → 86.5 aggregate at c=4; GSM8K 96.5–97.0 % (n=200) | [docs/ple-ssd.md](docs/ple-ssd.md) |
+| **mtp-pruning** | Prunes the Qwen3.5 / Qwen4Exp (Flash-Next) MTP draft vocabulary to a frequency keep-set, slicing the 2.5 GB shared draft `lm_head` to a few % of its rows. Lossless output. | draft-head 45 → ~1 ms/step; decode 1.28–1.35× at c=1–8; acceptance −1% | [docs/mtp-pruning.md](docs/mtp-pruning.md) |
 
 ## Installation
 

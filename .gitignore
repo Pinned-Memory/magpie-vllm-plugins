@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 *.npy
 *.pt
+scripts/flash_next/results/*/trace/
+scripts/flash_next/results/*/memguard.log

@@ -1,0 +1,278 @@
+diff --git a/vllm/config/compilation.py b/vllm/config/compilation.py
+index 9989c4d2a0..283da6c2bf 100644
+--- a/vllm/config/compilation.py
++++ b/vllm/config/compilation.py
+@@ -769,6 +769,7 @@ class CompilationConfig:
+         "vllm::mamba_mixer",
+         "vllm::short_conv",
+         "vllm::qwen4_exp_compute_ple_ngram_ids",
++        "vllm::qwen4_exp_ple_mmap_lookup",
+         "vllm::qwen4_exp_ple_short_conv",
+         "vllm::qwen4_exp_qsa_with_output",
+         "vllm::linear_attention",
+diff --git a/vllm/model_executor/models/config.py b/vllm/model_executor/models/config.py
+index 263c8a4035..5210ed8b1b 100644
+--- a/vllm/model_executor/models/config.py
++++ b/vllm/model_executor/models/config.py
+@@ -885,6 +885,12 @@ class Qwen4ExpForConditionalGenerationConfig(Qwen3_5ForConditionalGenerationConf
+         multimodal_config = vllm_config.model_config.multimodal_config
+         if multimodal_config is not None and multimodal_config.language_model_only:
+             _strip_qwen4_exp_mrope(vllm_config.model_config)
++        if getattr(vllm_config.model_config.hf_config, "ple_mmap", False):
++            from vllm.config.compilation import CUDAGraphMode
++
++            # The on-disk n-gram gather is host work that cannot be captured
++            # into a full CUDA graph; it runs between piecewise graphs.
++            vllm_config.compilation_config.cudagraph_mode = CUDAGraphMode.PIECEWISE
+         spec_config = vllm_config.speculative_config
+         if spec_config is not None and spec_config.method not in {
+             "mtp",
+diff --git a/vllm/models/qwen4_exp/nvidia/ple_layer.py b/vllm/models/qwen4_exp/nvidia/ple_layer.py
+index 09e8e32499..70010d7f40 100644
+--- a/vllm/models/qwen4_exp/nvidia/ple_layer.py
++++ b/vllm/models/qwen4_exp/nvidia/ple_layer.py
+@@ -2,8 +2,10 @@
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ """GPU-resident Qwen4Exp position-learning enhancement layers."""
+ 
++import ctypes
+ import math
+ from collections.abc import Iterable, Sequence
++from concurrent.futures import ThreadPoolExecutor
+ 
+ import torch
+ import torch.nn.functional as F
+@@ -148,6 +150,21 @@ def _get_ple_embedding_quant_method(
+     return Qwen4ExpPLEFp8EmbeddingMethod()
+ 
+ 
++def _madvise_random(tensor: torch.Tensor) -> None:
++    """Turn off readahead on the file pages behind an mmapped tensor.
++
++    Row gathers are random 4 KiB reads; the default readahead would pull
++    128 KiB per miss through the page cache.
++    """
++    start = tensor.data_ptr()
++    page_start = start - start % 4096
++    length = tensor.numel() * tensor.element_size() + (start - page_start)
++    madv_random = 1
++    ctypes.CDLL(None).madvise(
++        ctypes.c_void_p(page_start), ctypes.c_size_t(length), madv_random
++    )
++
++
+ class Qwen4ExpNGramEmbedding(nn.Module):
+     _MASK64 = (1 << 64) - 1
+     _SPLITMIX_GAMMA = 0x9E3779B97F4A7C15
+@@ -256,6 +273,7 @@ class Qwen4ExpNGramEmbedding(nn.Module):
+         layer_name: str,
+         quant_config: QuantizationConfig | None = None,
+         params_dtype: torch.dtype | None = None,
++        mmap_table: bool = False,
+     ) -> None:
+         super().__init__()
+         self.layer_name = layer_name
+@@ -308,16 +326,38 @@ class Qwen4ExpNGramEmbedding(nn.Module):
+         )
+         divisor = int(config.make_ngram_vocab_size_divisible_by)
+         padded_vocab_size = ((total_vocab_size + divisor - 1) // divisor) * divisor
+-        self.ngram_embedding = PLEVocabParallelEmbedding(
+-            padded_vocab_size,
+-            self.head_dim,
+-            params_dtype=params_dtype,
+-            padding_size=divisor,
+-            prefix=f"{prefix}.ngram_embedding",
+-            quant_method=_get_ple_embedding_quant_method(
+-                quant_config, f"{prefix}.ngram_embedding"
+-            ),
+-        )
++        self.padded_vocab_size = padded_vocab_size
++        self.shard_size = -(-padded_vocab_size // self.split_ngram_parts)
++        # mmap_table (magpie-spark-vllm ple-ssd): the table is never copied
++        # to the device. ``load_weights`` keeps the loader's zero-copy mmap
++        # views of the checkpoint shards and ``gather_rows`` reads rows on
++        # demand through the page cache, so the resident cost is whatever
++        # memory the kernel has spare for caching hot rows.
++        self.shards: list[torch.Tensor] | None = None
++        self.ngram_embedding: PLEVocabParallelEmbedding | None = None
++        if mmap_table:
++            self.shards = [torch.empty(0)] * self.split_ngram_parts
++            self.shard_starts = torch.arange(self.split_ngram_parts + 1, device="cpu")
++            self.gather_threads = 16
++            self.gather_pool = ThreadPoolExecutor(self.gather_threads)
++            # Pinned staging for the unique rows of one forward.
++            self.staging = torch.empty(
++                (max_total_tokens * self.ngram_heads, self.head_dim),
++                dtype=params_dtype,
++                device="cpu",
++                pin_memory=True,
++            )
++        else:
++            self.ngram_embedding = PLEVocabParallelEmbedding(
++                padded_vocab_size,
++                self.head_dim,
++                params_dtype=params_dtype,
++                padding_size=divisor,
++                prefix=f"{prefix}.ngram_embedding",
++                quant_method=_get_ple_embedding_quant_method(
++                    quant_config, f"{prefix}.ngram_embedding"
++                ),
++            )
+         self.register_buffer(
+             "positions_buffer",
+             torch.arange(max_total_tokens, dtype=torch.int64),
+@@ -434,12 +474,58 @@ class Qwen4ExpNGramEmbedding(nn.Module):
+             id_blocks.append(ids[request_indices, adjusted_columns])
+         return torch.cat(id_blocks, dim=-1)
+ 
++    def gather_rows(self, ngram_ids: torch.Tensor) -> torch.Tensor:
++        """Read the rows of ``ngram_ids`` from the mmapped checkpoint shards.
++
++        Unique ids are sorted, so each shard's rows form one contiguous run;
++        runs are split across threads so page faults overlap on the NVMe.
++        Returns ``[*ngram_ids.shape, head_dim]`` on the device of
++        ``ngram_ids``.
++        """
++        assert self.shards is not None
++        unique_ids, inverse = torch.unique(ngram_ids, return_inverse=True)
++        ids = unique_ids.cpu()
++        shard_ids = ids // self.shard_size
++        local_ids = ids - shard_ids * self.shard_size
++        rows = self.staging[: ids.numel()]
++        runs = torch.searchsorted(shard_ids, self.shard_starts).tolist()
++        chunk = max(1, math.ceil(ids.numel() / self.gather_threads))
++        tasks = [
++            (shard, start, min(start + chunk, end))
++            for shard, (begin, end) in enumerate(zip(runs, runs[1:]))
++            for start in range(begin, end, chunk)
++        ]
++
++        def gather(task: tuple[int, int, int]) -> None:
++            shard, start, end = task
++            torch.index_select(
++                self.shards[shard], 0, local_ids[start:end], out=rows[start:end]
++            )
++
++        for _ in self.gather_pool.map(gather, tasks):
++            pass
++        return rows.to(ngram_ids.device, non_blocking=True)[inverse]
++
+     def forward(
+         self,
+         input_ids: torch.Tensor,
+         query_start_loc: torch.Tensor,
+         ngram_context: torch.Tensor,
+     ) -> torch.Tensor:
++        if self.shards is not None:
++            output = input_ids.new_empty(
++                (input_ids.shape[0], self.embedding_dim), dtype=self.staging.dtype
++            )
++            # Hashing, the disk gather and the H2D copy are host work: keep
++            # them outside CUDA graphs (splitting op, PIECEWISE mode).
++            torch.ops.vllm.qwen4_exp_ple_mmap_lookup(
++                input_ids,
++                query_start_loc,
++                ngram_context,
++                output,
++                self.layer_name,
++            )
++            return output
+         ngram_ids = input_ids.new_empty(
+             (input_ids.shape[0], self.ngram_heads),
+             dtype=torch.long,
+@@ -492,27 +578,30 @@ class Qwen4ExpNGramEmbedding(nn.Module):
+                         f"PLE embedding shard index {shard_index} exceeds "
+                         f"split_ngram_parts={self.split_ngram_parts}"
+                     )
+-                embedding = self.ngram_embedding
+-                shard_size = (
+-                    embedding.org_vocab_size + self.split_ngram_parts - 1
+-                ) // self.split_ngram_parts
+-                checkpoint_start = shard_index * shard_size
++                checkpoint_start = shard_index * self.shard_size
+                 expected_rows = max(
+                     0,
+-                    min(shard_size, embedding.org_vocab_size - checkpoint_start),
++                    min(self.shard_size, self.padded_vocab_size - checkpoint_start),
+                 )
+-                expected_shape = (expected_rows, embedding.embedding_dim)
++                expected_shape = (expected_rows, self.head_dim)
+                 if tuple(loaded_weight.shape) != expected_shape:
+                     raise ValueError(
+                         f"Shape mismatch for PLE embedding shard {shard_index}: "
+                         f"expected {expected_shape}, got "
+                         f"{tuple(loaded_weight.shape)}"
+                     )
+-                embedding.weight.weight_loader(
+-                    embedding.weight,
+-                    loaded_weight,
+-                    checkpoint_start=checkpoint_start,
+-                )
++                if self.shards is not None:
++                    # Keep the loader's mmap view; nothing is copied.
++                    self.shards[shard_index] = loaded_weight
++                    _madvise_random(loaded_weight)
++                else:
++                    embedding = self.ngram_embedding
++                    assert embedding is not None
++                    embedding.weight.weight_loader(
++                        embedding.weight,
++                        loaded_weight,
++                        checkpoint_start=checkpoint_start,
++                    )
+                 loaded.add("ngram_embedding.weight")
+                 continue
+             regular_weights.append((name, loaded_weight))
+@@ -562,6 +651,7 @@ class Qwen4ExpPLELayer(nn.Module, MambaBase):
+             layer_name=prefix,
+             quant_config=quant_config,
+             params_dtype=model_config.dtype,
++            mmap_table=bool(getattr(model_config.hf_config, "ple_mmap", False)),
+         )
+         self.key_proj = ReplicatedLinear(
+             int(config.ple_embed_dim),
+@@ -1215,6 +1305,29 @@ def qwen4_exp_compute_ple_ngram_ids_fake(
+     return
+ 
+ 
++def qwen4_exp_ple_mmap_lookup(
++    input_ids: torch.Tensor,
++    query_start_loc: torch.Tensor,
++    ngram_context: torch.Tensor,
++    output: torch.Tensor,
++    layer_name: str,
++) -> None:
++    """Hash n-gram ids and gather their rows from the mmapped table."""
++    embedding = get_forward_context().no_compile_layers[layer_name].ple_embedding
++    ngram_ids = embedding.compute_ngram_ids(input_ids, query_start_loc, ngram_context)
++    output.copy_(embedding.gather_rows(ngram_ids).flatten(-2))
++
++
++def qwen4_exp_ple_mmap_lookup_fake(
++    input_ids: torch.Tensor,
++    query_start_loc: torch.Tensor,
++    ngram_context: torch.Tensor,
++    output: torch.Tensor,
++    layer_name: str,
++) -> None:
++    return
++
++
+ def qwen4_exp_ple_short_conv(
+     inputs: torch.Tensor,
+     output: torch.Tensor,
+@@ -1241,6 +1354,14 @@ direct_register_custom_op(
+ )
+ 
+ 
++direct_register_custom_op(
++    op_name="qwen4_exp_ple_mmap_lookup",
++    op_func=qwen4_exp_ple_mmap_lookup,
++    mutates_args=["output"],
++    fake_impl=qwen4_exp_ple_mmap_lookup_fake,
++)
++
++
+ direct_register_custom_op(
+     op_name="qwen4_exp_ple_short_conv",
+     op_func=qwen4_exp_ple_short_conv,
